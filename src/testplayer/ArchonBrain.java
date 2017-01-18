@@ -11,7 +11,6 @@ public class ArchonBrain implements Brain {
 
 	private Routine last;
 	private Routine current;
-	private static final int BROADCAST_RANGE = ;
 	private RobotController rc;
 	private MapLocation lastLoc;
 	private double radius;
