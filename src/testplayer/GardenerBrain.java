@@ -16,6 +16,8 @@ public class GardenerBrain implements Brain {
 	private double radius;
 	private int radiusInc;
 	private boolean space;
+	private boolean builtScout; // might be bad
+	private Direction[] blah  = new Direction[] {Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST};
 	// private List<MapLocation> knownEnemyArchons;
 
 	private Map<Integer, RobotInfo> robots;
@@ -23,7 +25,22 @@ public class GardenerBrain implements Brain {
 	private boolean isLeader;
 
 	private void runTurn() throws GameActionException {
-			rc.
+		rc.readBroadcast(arg0) //find some way to balance economy of scout it works 
+		for (int j = 0; j < 4; j++){
+			if (rc.canBuildRobot(RobotType.SCOUT, blah[j])){
+				rc.buildRobot(RobotType.SCOUT, blah[j]);
+				break;
+			}
+		}
+		
+		direction.
+		
+		
+		rc.buildRobot(RobotType.SCOUT, direction);
+		if (builtScout == false){
+			
+		}
+			
 		
 		}
 		
@@ -33,6 +50,7 @@ public class GardenerBrain implements Brain {
 		radius = 8;
 		radiusInc = 7;
 		space = true;
+		builtScout = false;
 	}
 
 	@Override
