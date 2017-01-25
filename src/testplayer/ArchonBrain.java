@@ -49,8 +49,8 @@ public class ArchonBrain implements Brain {
 			}
 				
 		}
-		if (numTrees > 10 && rc.getTeamBullets() > 100){
-			rc.donate(rc.getTeamBullets());
+		if (rc.getTeamBullets() > 500){
+			rc.donate((float) (Math.round(rc.getTeamBullets()/(2*rc.getVictoryPointCost()))*rc.getVictoryPointCost()+.000000001));
 		}
 		BulletInfo[] bleh = rc.senseNearbyBullets();
 		//insert dodge script here/movement
