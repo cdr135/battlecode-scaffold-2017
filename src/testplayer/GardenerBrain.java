@@ -45,14 +45,13 @@ public class GardenerBrain implements Brain {
 		}
 		*/
 		if (startbuilding){
-			if (builtScout == false) {
 				for (int i = 0; i < direction.length; i++) {
 					if (rc.canPlantTree(direction[i])) {
 						rc.plantTree(direction[i]);
 						break;
 					}
 				}
-			}
+
 			
 		}
 
