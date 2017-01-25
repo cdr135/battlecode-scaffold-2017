@@ -17,7 +17,9 @@ public class GardenerBrain implements Brain {
 	private int radiusInc;
 	private boolean space;
 	private boolean builtScout; // might be bad
-	private Direction[] blah  = new Direction[] {Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST};
+	private Direction[] blah = new Direction[] { Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST };
+	private Direction[] direction = new Direction[6];
+	private boolean startbuilding;
 	// private List<MapLocation> knownEnemyArchons;
 
 	private Map<Integer, RobotInfo> robots;
@@ -25,25 +27,59 @@ public class GardenerBrain implements Brain {
 	private boolean isLeader;
 
 	private void runTurn() throws GameActionException {
-		rc.readBroadcast(arg0) //find some way to balance economy of scout it works 
-		for (int j = 0; j < 4; j++){
-			if (rc.canBuildRobot(RobotType.SCOUT, blah[j])){
-				rc.buildRobot(RobotType.SCOUT, blah[j]);
-				break;
+		if (!startbuilding){
+			move();
+		}
+		TreeInfo[] treeinfo = rc.senseNearbyTrees();
+		RobotInfo[] nejworld = rc.senseNearbyRobots();
+		// find some way to balance economy of scout it works
+/*
+		if (builtScout == false) {
+			for (int i = 0; i < blah.length; i++) {
+				if (rc.canBuildRobot(RobotType.SCOUT, blah[i])) {
+					rc.buildRobot(RobotType.SCOUT, blah[i]);
+					builtScout = true;
+					break;
+				}
 			}
 		}
-		
-		direction.
-		
-		
-		rc.buildRobot(RobotType.SCOUT, direction);
-		if (builtScout == false){
+		*/
+		if (startbuilding){
+			if (builtScout == false) {
+				for (int i = 0; i < direction.length; i++) {
+					if (rc.canPlantTree(direction[i])) {
+						rc.plantTree(direction[i]);
+						break;
+					}
+				}
+			}
 			
 		}
-			
-		
+
+	}
+
+	private void move() throws GameActionException {
+		TreeInfo[] treeinfo = rc.senseNearbyTrees();
+		RobotInfo[] nejworld = rc.senseNearbyRobots();
+		MapLocation nearestGardner = new MapLocation(0, 0);
+		for (RobotInfo x : nejworld) {
+			if (x.getType().equals(RobotType.GARDENER)) {
+				if (x.getLocation().distanceTo(rc.getLocation()) < 5) {
+					nearestGardner = x.getLocation();
+				}
+			}
 		}
-		
+		if (nearestGardner == null) {
+			startbuilding = true;
+		} else {
+			if (rc.canMove(rc.getLocation().directionTo(nearestGardner).opposite())) {
+				rc.move(rc.getLocation().directionTo(nearestGardner).opposite());
+			} else {
+				startbuilding = true;
+			}
+		}
+	}
+
 	private void initialize() throws GameActionException {
 		current = Routine.GROUP;
 		robots = new TreeMap<Integer, RobotInfo>();
@@ -51,6 +87,13 @@ public class GardenerBrain implements Brain {
 		radiusInc = 7;
 		space = true;
 		builtScout = false;
+		MapLocation hehe = new MapLocation(0, 0);
+		for (int i = 0; i < 6; i++) {
+			MapLocation heheNew = new MapLocation(hehe.x + (float) Math.cos(Math.PI / 3 * i),
+					hehe.y + (float) Math.sin(Math.PI / 3 * i));
+			direction[i] = hehe.directionTo(heheNew);
+		}
+		startbuilding = false;
 	}
 
 	@Override

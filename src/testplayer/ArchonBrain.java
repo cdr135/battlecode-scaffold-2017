@@ -25,14 +25,22 @@ public class ArchonBrain implements Brain {
 
 	private void runTurn() throws GameActionException {
 		float numPoints = rc.getTeamBullets();
+		TreeInfo[] treeinfo = rc.senseNearbyTrees();
 		RobotInfo[] nejworld =  rc.senseNearbyRobots();
-		int numGardeners = 0;
+		double numGardeners = 0;
+		double numTrees = 0;
 		for (int i = 0; i < nejworld.length; i++){
 			if (nejworld[i].getType().equals(RobotType.GARDENER)){
 				numGardeners++;
 			}
 		}
-		if (numGardeners <1){ //placeholder
+		for (int i = 0 ; i < treeinfo.length; i++){
+			if (treeinfo[i].team.equals(rc.getTeam())){
+				numTrees++;
+			}
+		}
+		
+		if (numTrees/numGardeners >= 4 || numGardeners < 3){ //placeholder
 			for (int j = 0; j < 4; j++){
 				if (rc.canBuildRobot(RobotType.GARDENER, blah[j])){
 					rc.buildRobot(RobotType.GARDENER, blah[j]);
@@ -41,10 +49,16 @@ public class ArchonBrain implements Brain {
 			}
 				
 		}
+		if (numTrees > 10 && rc.getTeamBullets() > 100){
+			rc.donate(rc.getTeamBullets());
+		}
 		BulletInfo[] bleh = rc.senseNearbyBullets();
 		//insert dodge script here/movement
 		}
+	
+	private void move() throws GameActionException{
 		
+	}
 	private void initialize() throws GameActionException {
 		current = Routine.GROUP;
 		robots = new TreeMap<Integer, RobotInfo>();

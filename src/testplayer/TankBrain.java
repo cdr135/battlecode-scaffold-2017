@@ -24,7 +24,11 @@ public class TankBrain implements Brain {
 
 	private void runTurn() throws GameActionException {
 		
-		}
+	}
+	
+	private void move() throws GameActionException{
+		
+	}
 		
 	private void initialize() throws GameActionException {
 		current = Routine.GROUP;
