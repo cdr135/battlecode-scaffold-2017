@@ -26,6 +26,10 @@ public class ScoutBrain implements Brain {
 		
 		}
 	private void move() throws GameActionException{
+	dodge();
+		
+	}
+	private void dodge(){
 		
 	}
 	private void initialize() throws GameActionException {
