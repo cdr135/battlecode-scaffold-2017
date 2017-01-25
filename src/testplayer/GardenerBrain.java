@@ -33,7 +33,7 @@ public class GardenerBrain implements Brain {
 		TreeInfo[] treeinfo = rc.senseNearbyTrees();
 		RobotInfo[] nejworld = rc.senseNearbyRobots();
 		// find some way to balance economy of scout it works
-/*
+		/*
 		if (builtScout == false) {
 			for (int i = 0; i < blah.length; i++) {
 				if (rc.canBuildRobot(RobotType.SCOUT, blah[i])) {
@@ -43,7 +43,7 @@ public class GardenerBrain implements Brain {
 				}
 			}
 		}
-		*/
+		 */
 		{
 			float mh = 51;
 			Integer tid = null;
@@ -53,28 +53,25 @@ public class GardenerBrain implements Brain {
 						mh = t.getHealth();
 						tid = t.getID();
 					}
-						
+
 			}
 			if (tid != null)
 				rc.water(tid);
 		}
-		//*/if (startbuilding){ /*/
-				for (int i = 0; i < direction.length; i++) {
-					if (rc.canPlantTree(direction[i])) {
-						rc.plantTree(direction[i]);
-						break;
-					}
-				}
-
-			
+		for (int i = 0; i < direction.length; i++) {
+			if (rc.canPlantTree(direction[i])) {
+				rc.plantTree(direction[i]);
+				break;
+			}
 		}
+
 
 	}
 
 	private void move() throws GameActionException {
 		TreeInfo[] treeinfo = rc.senseNearbyTrees();
 		RobotInfo[] nejworld = rc.senseNearbyRobots();
-		MapLocation nearestGardner = new MapLocation(0, 0);
+		MapLocation nearestGardner = null;
 		for (RobotInfo x : nejworld) {
 			if (x.getType().equals(RobotType.GARDENER)) {
 				if (x.getLocation().distanceTo(rc.getLocation()) < 5) {
@@ -82,14 +79,22 @@ public class GardenerBrain implements Brain {
 				}
 			}
 		}
-		if (nearestGardner == null) {
+		/*if (nearestGardner == null) {
 			startbuilding = true;
-		} else {
+		}else {
 			if (rc.canMove(rc.getLocation().directionTo(nearestGardner).opposite())) {
 				rc.move(rc.getLocation().directionTo(nearestGardner).opposite());
 			} else {
 				startbuilding = true;
 			}
+		}*/
+		if (Math.random() < 0.7) {
+			Direction[] d = new Direction[6];
+			for (int i = 0; i < 6; i++)
+				d[i] = direction[(int) (Math.random()*direction.length)];
+			for (Direction dir : d)
+				if (rc.canMove(dir))
+					rc.move(dir);
 		}
 	}
 
