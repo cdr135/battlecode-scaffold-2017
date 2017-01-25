@@ -51,9 +51,14 @@ public class GardenerBrain implements Brain {
 						break;
 					}
 				}
-
-			
+			LinkedList<TreeInfo> friendlyTrees = new LinkedList<TreeInfo>();
+			for (TreeInfo x: treeinfo){
+				if (x.getTeam().equals(rc.getTeam())&& rc.canWater(x.getLocation())){
+					friendlyTrees.add(x);
+				}
+			}
 		}
+			
 
 	}
 
