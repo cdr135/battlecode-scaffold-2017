@@ -44,7 +44,21 @@ public class GardenerBrain implements Brain {
 			}
 		}
 		*/
-		if (startbuilding){
+		{
+			float mh = 51;
+			Integer tid = null;
+			for (TreeInfo t : treeinfo) {
+				if (t.getTeam() == rc.getTeam())
+					if  (t.getHealth() < mh) {
+						mh = t.getHealth();
+						tid = t.getID();
+					}
+						
+			}
+			if (tid != null)
+				rc.water(tid);
+		}
+		//*/if (startbuilding){ /*/
 				for (int i = 0; i < direction.length; i++) {
 					if (rc.canPlantTree(direction[i])) {
 						rc.plantTree(direction[i]);
