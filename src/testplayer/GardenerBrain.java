@@ -2,7 +2,10 @@ package testplayer;
 
 import java.util.*;
 import battlecode.common.*;
+import testplayer.res.*;
+import static testplayer.res.Utils.*;
 
+@SuppressWarnings("unused")
 public class GardenerBrain implements Brain {
 
 	private enum Routine {
@@ -17,8 +20,7 @@ public class GardenerBrain implements Brain {
 	private int radiusInc;
 	private boolean space;
 	private boolean builtScout; // might be bad
-	private Direction[] blah = new Direction[] { Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST };
-	private Direction[] direction = new Direction[6];
+	private Direction[] direction = Directions.d6();
 	private boolean startbuilding;
 	// private List<MapLocation> knownEnemyArchons;
 
@@ -48,7 +50,7 @@ public class GardenerBrain implements Brain {
 			float mh = 51;
 			Integer tid = null;
 			for (TreeInfo t : treeinfo) {
-				if (t.getTeam() == rc.getTeam())
+				if (t.getTeam() == rc.getTeam() && rc.canInteractWithTree(t.ID))
 					if  (t.getHealth() < mh) {
 						mh = t.getHealth();
 						tid = t.getID();
@@ -58,9 +60,9 @@ public class GardenerBrain implements Brain {
 			if (tid != null)
 				rc.water(tid);
 		}
-		for (int i = 0; i < direction.length; i++) {
-			if (rc.canPlantTree(direction[i])) {
-				rc.plantTree(direction[i]);
+		for (Direction d : shuffle(direction)) {
+			if (rc.canPlantTree(d)) {
+				rc.plantTree(d);
 				break;
 			}
 		}
@@ -88,14 +90,9 @@ public class GardenerBrain implements Brain {
 				startbuilding = true;
 			}
 		}*/
-		if (Math.random() < 0.7) {
-			Direction[] d = new Direction[6];
-			for (int i = 0; i < 6; i++)
-				d[i] = direction[(int) (Math.random()*direction.length)];
-			for (Direction dir : d)
-				if (rc.canMove(dir))
-					rc.move(dir);
-		}
+		/**/for (Direction dir : shuffle(direction))
+			if (rc.canMove(dir))
+				rc.move(dir);/**/
 	}
 
 	private void initialize() throws GameActionException {

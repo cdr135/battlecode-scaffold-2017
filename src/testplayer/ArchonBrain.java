@@ -2,7 +2,9 @@ package testplayer;
 
 import java.util.*;
 import battlecode.common.*;
+import testplayer.res.*;
 
+@SuppressWarnings("unused")
 public class ArchonBrain implements Brain {
 
 	private enum Routine {
@@ -16,7 +18,7 @@ public class ArchonBrain implements Brain {
 	private double radius;
 	private int radiusInc;
 	private boolean space;
-	private Direction[] blah  = new Direction[] {Direction.NORTH, Direction.EAST, Direction.SOUTH, Direction.WEST};
+	private Direction[] dirs = Directions.d6();
 	// private List<MapLocation> knownEnemyArchons;
 
 	private Map<Integer, RobotInfo> robots;
@@ -40,10 +42,10 @@ public class ArchonBrain implements Brain {
 			}
 		}
 		
-		if (numTrees/numGardeners >= 4 || numGardeners < 3){ //placeholder
-			for (int j = 0; j < 4; j++){
-				if (rc.canBuildRobot(RobotType.GARDENER, blah[j])){
-					rc.buildRobot(RobotType.GARDENER, blah[j]);
+		//if (numTrees/numGardeners >= 4 || numGardeners < 3){ //placeholder
+			for (Direction d : Utils.shuffle(dirs))
+				if (rc.canBuildRobot(RobotType.GARDENER, d)){
+					rc.buildRobot(RobotType.GARDENER, d);
 					break;
 				}
 			}
