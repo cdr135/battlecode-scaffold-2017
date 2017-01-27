@@ -8,10 +8,6 @@ import static testplayer.res.Utils.*;
 @SuppressWarnings("unused")
 public class GardenerBrain implements Brain {
 
-	private enum Routine {
-		CLUSTER, GROUP, NONE;
-	}
-
 	private Routine last;
 	private Routine current;
 	private RobotController rc;
@@ -37,9 +33,9 @@ public class GardenerBrain implements Brain {
 		// find some way to balance economy of scout it works
 		
 		if (builtScout == false) {
-			for (int i = 0; i < blah.length; i++) {
-				if (rc.canBuildRobot(RobotType.SCOUT, blah[i])) {
-					rc.buildRobot(RobotType.SCOUT, blah[i]);
+			for (Direction dir : shuffle(direction)) {
+				if (rc.canBuildRobot(RobotType.SCOUT, dir)) {
+					rc.buildRobot(RobotType.SCOUT, dir);
 					builtScout = true;
 					break;
 				}

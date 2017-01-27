@@ -7,10 +7,6 @@ import testplayer.res.*;
 @SuppressWarnings("unused")
 public class ArchonBrain implements Brain {
 
-	private enum Routine {
-		CLUSTER, GROUP, NONE;
-	}
-
 	private Routine last;
 	private Routine current;
 	private RobotController rc;

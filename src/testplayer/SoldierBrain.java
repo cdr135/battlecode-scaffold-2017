@@ -2,12 +2,9 @@ package testplayer;
 
 import java.util.*;
 import battlecode.common.*;
+import testplayer.res.*;
 
 public class SoldierBrain implements Brain {
-
-	private enum Routine {
-		CLUSTER, GROUP, NONE;
-	}
 
 	private Routine last;
 	private Routine current;
