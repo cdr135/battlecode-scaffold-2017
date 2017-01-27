@@ -33,7 +33,7 @@ public class GardenerBrain implements Brain {
 		TreeInfo[] treeinfo = rc.senseNearbyTrees();
 		RobotInfo[] nejworld = rc.senseNearbyRobots();
 		// find some way to balance economy of scout it works
-		/*
+		
 		if (builtScout == false) {
 			for (int i = 0; i < blah.length; i++) {
 				if (rc.canBuildRobot(RobotType.SCOUT, blah[i])) {
@@ -43,7 +43,7 @@ public class GardenerBrain implements Brain {
 				}
 			}
 		}
-		 */
+		 
 		{
 			float mh = 51;
 			Integer tid = null;
