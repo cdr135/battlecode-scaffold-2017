@@ -93,6 +93,11 @@ public class GardenerBrain implements Brain {
 		/**/for (Direction dir : shuffle(direction))
 			if (rc.canMove(dir))
 				rc.move(dir);/**/
+		/*Direction dir;
+		do {
+			dir = new Direction((float) (Math.random()*2*Math.PI));
+		} while (!rc.canMove(dir));
+		rc.move(dir);*/
 	}
 
 	private void initialize() throws GameActionException {
