@@ -3,6 +3,7 @@ package testplayer;
 import java.util.*;
 import battlecode.common.*;
 
+@SuppressWarnings("unused")
 public class TankBrain implements Brain {
 
 	private enum Routine {

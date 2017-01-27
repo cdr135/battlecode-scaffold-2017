@@ -4,6 +4,7 @@ import java.util.*;
 import battlecode.common.*;
 import testplayer.res.*;
 
+@SuppressWarnings("unused")
 public class LumberjackBrain implements Brain {
 
 	private Routine last;

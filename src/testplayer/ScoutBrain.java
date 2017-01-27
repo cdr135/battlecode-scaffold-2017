@@ -4,6 +4,7 @@ import java.util.*;
 import battlecode.common.*;
 import testplayer.res.*;
 
+@SuppressWarnings("unused")
 public class ScoutBrain implements Brain {
 
 	private Routine last;
