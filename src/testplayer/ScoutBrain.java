@@ -23,10 +23,12 @@ public class ScoutBrain implements Brain {
 	private boolean isLeader;
 
 	private void runTurn() throws GameActionException {
+		BulletInfo[] bullets = rc.senseNearbyBullets(); //1. dodge 2. stay out of range 3. farm 4. kill gardeners 5. move randomly
+		
 		
 		}
 	private void move() throws GameActionException{
-	dodge();
+		dodge();
 		
 	}
 	private void dodge(){
