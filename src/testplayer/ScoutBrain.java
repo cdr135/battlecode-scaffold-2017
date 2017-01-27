@@ -22,6 +22,7 @@ public class ScoutBrain implements Brain {
 
 	private void runTurn() throws GameActionException {
 		BulletInfo[] bullets = rc.senseNearbyBullets(); //1. dodge 2. stay out of range 3. farm 4. kill gardeners 5. move randomly
+		dodge();
 		farm();
 		
 		}
@@ -30,7 +31,17 @@ public class ScoutBrain implements Brain {
 		
 	}
 	private void dodge(){
-		
+		BulletInfo[] bullets = rc.senseNearbyBullets();
+		ArrayList<BulletInfo> dangerousBullets=  new ArrayList<BulletInfo>();
+		for (BulletInfo x : bullets){
+			if (x.getLocation().distanceTo(rc.getLocation())< 5 ){
+				float angleToBullet = rc.getLocation().directionTo(x.getLocation()).getAngleDegrees();
+				if (angleToBullet <= (x.getDir().getAngleDegrees() + 45)  && angleToBullet >= (x.getDir().getAngleDegrees() - 45)){
+					dangerousBullets.add(x);
+				}
+			}
+			
+		}
 	}
 	private void initialize() throws GameActionException {
 		current = Routine.GROUP;
