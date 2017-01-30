@@ -31,18 +31,31 @@ public class ScoutBrain implements Brain {
 		dodge();
 		
 	}
-	private void dodge(){
+	private void dodge() throws GameActionException{
 		BulletInfo[] bullets = rc.senseNearbyBullets();
 		ArrayList<BulletInfo> dangerousBullets=  new ArrayList<BulletInfo>();
 		for (BulletInfo x : bullets){
 			if (x.getLocation().distanceTo(rc.getLocation())< 5 ){
-				float angleToBullet = rc.getLocation().directionTo(x.getLocation()).getAngleDegrees();
-				if (angleToBullet <= (x.getDir().getAngleDegrees() + 45)  && angleToBullet >= (x.getDir().getAngleDegrees() - 45)){
+				Direction angleToBullet = rc.getLocation().directionTo(x.getLocation());
+				float angleBetween = x.getDir().degreesBetween(angleToBullet);
+				if (angleBetween < 90){
 					dangerousBullets.add(x);
 				}
 			}
-			
+		
 		}
+		//coloumb dodge#1
+		float x  = 0;
+		float y = 0;
+		for (BulletInfo j: bullets){
+			float angle = j.getLocation().directionTo(rc.getLocation()).getAngleDegrees();
+			float distance  =  j.getLocation().distanceSquaredTo(rc.getLocation());
+			x += j.speed * (Math.cos(angle/180 * Math.PI))/distance;
+			y += j.speed * (Math.sin(angle/180 * Math.PI))/distance;
+		}
+		MapLocation destination = new MapLocation(rc.getLocation().x + x, rc.getLocation().y + y);
+		rc.move(destination);
+		
 	}
 	private void stayOutOfRange(){
 		RobotInfo[] robots = rc.senseNearbyRobots();
