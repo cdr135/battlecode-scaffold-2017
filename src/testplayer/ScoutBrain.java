@@ -83,6 +83,7 @@ public class ScoutBrain implements Brain {
 				}
 		}
 		//move towards unshaken trees
+		
 		MapLocation closestTree = trees[0].getLocation();
 		float closestDistance = 99999;
 		//look for closest unshaken trees and try to move towards them
@@ -90,14 +91,32 @@ public class ScoutBrain implements Brain {
 			if(tree.getContainedBullets()!=0){
 				if(rc.getLocation().distanceTo(tree.getLocation())<closestDistance){
 					closestDistance = rc.getLocation().distanceTo(tree.getLocation());
-					closestTree = tree.getLocation();
+					closestTree = tree.getLocation();	
 				}
 			}
 		}
-		try {
-			rc.move(rc.getLocation().directionTo(closestTree));
-		} catch (GameActionException e) {
+		//occasionally will get blocked from moving straight towards target - jiggle around to find way out
+		if(rc.canMove(rc.getLocation().directionTo(closestTree))){
+			try {
+				rc.move(rc.getLocation().directionTo(closestTree));
+			} catch (GameActionException e) {
+			}
+		}
+		else{
+			wander();
 		}
 	}
-
+	//moves scout in random direction
+	public void wander(){
+		Direction[] directions = Directions.d6();
+		while(!rc.hasMoved()){
+			try {
+				Direction rand = directions[(int)Math.random()*6];
+				if(rc.canMove(rand)){
+					rc.move(rand);
+				}
+			} catch (GameActionException e) {
+			}
+		}
+	}
 }
