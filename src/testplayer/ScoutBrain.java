@@ -23,6 +23,7 @@ public class ScoutBrain implements Brain {
 	private void runTurn() throws GameActionException {
 		BulletInfo[] bullets = rc.senseNearbyBullets(); //1. dodge 2. stay out of range 3. farm 4. kill gardeners 5. move randomly
 		dodge();
+		stayOutOfRange();
 		farm();
 		
 		}
@@ -42,6 +43,26 @@ public class ScoutBrain implements Brain {
 			}
 			
 		}
+	}
+	private void stayOutOfRange(){
+		RobotInfo[] robots = rc.senseNearbyRobots();
+		
+		//collect list of dangerous robots, based on their individual sight radius'
+		ArrayList<RobotInfo> dangerousRobots = new ArrayList<RobotInfo>();
+		for(RobotInfo r: robots){
+			if(r.getTeam() != rc.getTeam()){
+				RobotType robotType = r.getType();
+				if (robotType == RobotType.SCOUT || robotType == RobotType.SOLDIER || robotType == RobotType.LUMBERJACK
+						|| robotType == RobotType.TANK) {
+					if(robotType.sensorRadius < rc.getLocation().distanceTo(r.getLocation())){
+						dangerousRobots.add(r);
+						
+					}
+				}
+			}
+		}
+		
+		
 	}
 	private void initialize() throws GameActionException {
 		current = Routine.GROUP;
@@ -116,11 +137,11 @@ public class ScoutBrain implements Brain {
 			}
 			//If still blocked, wander around to try to find other path
 			if(!rc.hasMoved())
-				wander();
+				jiggle();
 		}
 	}
 	//moves scout in random direction
-	public void wander(){
+	public void jiggle(){
 		Direction[] directions = Directions.d6();
 		while(!rc.hasMoved()){
 			try {
