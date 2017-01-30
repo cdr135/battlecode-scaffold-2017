@@ -95,15 +95,28 @@ public class ScoutBrain implements Brain {
 				}
 			}
 		}
-		//occasionally will get blocked from moving straight towards target - jiggle around to find way out
+		//Attempt to move straight towards nearest tree
 		if(rc.canMove(rc.getLocation().directionTo(closestTree))){
 			try {
 				rc.move(rc.getLocation().directionTo(closestTree));
 			} catch (GameActionException e) {
 			}
 		}
+		//Try to move as close as possible to tree
 		else{
-			wander();
+			for(float n = RobotType.SCOUT.strideRadius; n > 0; n -= RobotType.SCOUT.strideRadius/5){
+				if(!rc.hasMoved() && rc.canMove(rc.getLocation().directionTo(closestTree), n)){
+					try {
+						rc.move(rc.getLocation().directionTo(closestTree), n);
+					} catch (GameActionException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+			}
+			//If still blocked, wander around to try to find other path
+			if(!rc.hasMoved())
+				wander();
 		}
 	}
 	//moves scout in random direction
