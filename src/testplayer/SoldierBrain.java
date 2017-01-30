@@ -21,7 +21,26 @@ public class SoldierBrain implements Brain {
 	private boolean isLeader;
 
 	private void runTurn() throws GameActionException {
-		
+		//TODO: add dodging
+		//fires triad at closest robot if <4 away
+		if(rc.canFireTriadShot()) {
+			RobotInfo[] enemies = rc.senseNearbyRobots((float)radius,rc.getTeam().opponent());
+			if(enemies.length>0) {
+				RobotInfo closest = enemies[0];
+				double length = rc.getLocation().distanceSquaredTo(closest.getLocation());
+				for(RobotInfo r: enemies) {
+					double newLength = rc.getLocation().distanceSquaredTo(r.getLocation());
+					if(newLength<length) {
+						closest=r;
+						length=newLength;
+					}
+				}
+				if(length<16) {
+					rc.fireTriadShot(rc.getLocation().directionTo(closest.getLocation()));
+				}
+			}
+		}
+			
 		}
 	private void move() throws GameActionException{
 		
