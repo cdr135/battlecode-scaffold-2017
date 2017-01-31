@@ -68,10 +68,10 @@ public class SoldierBrain implements Brain {
 			roam();
 		}
 		else{
-			if (rc.getLocation().distanceTo(closest.getLocation())< 6){
+			if (rc.getLocation().distanceTo(closest.getLocation())< 5){
 				moveAround(rc.getLocation().directionTo(closest.location).opposite());
 			}
-			else if (rc.getLocation().distanceTo(closest.getLocation()) > 7){
+			else if (rc.getLocation().distanceTo(closest.getLocation()) > 7.5){
 				moveAround(rc.getLocation().directionTo(closest.location));
 			}
 			else{
