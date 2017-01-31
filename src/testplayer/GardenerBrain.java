@@ -35,6 +35,7 @@ public class GardenerBrain implements Brain {
 			for (Direction dir : shuffle(direction)) {
 				if (rc.canBuildRobot(RobotType.SCOUT, dir)) {
 					rc.buildRobot(RobotType.SCOUT, dir);
+					Globals.numScouts++;
 					builtScout = true;
 					break;
 				}
