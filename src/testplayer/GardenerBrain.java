@@ -79,6 +79,24 @@ public class GardenerBrain implements Brain {
 				}
 			}
 		}
+		RobotInfo[] allied = rc.senseNearbyRobots(20, rc.getTeam());
+		int numSoldiers = 0;
+		for (RobotInfo x: allied){
+			if (x.getType().equals(RobotType.SOLDIER)){
+				numSoldiers++;
+			}
+		}
+		if (numSoldiers < 3){
+			//arbitrary
+			for (Direction dir : shuffle(direction)) {
+				if (rc.canBuildRobot(RobotType.SOLDIER, dir)) {
+					rc.buildRobot(RobotType.SOLDIER, dir);
+					break;
+				}
+			}
+		}
+			
+		
 	}
 
 	private boolean hasOtherGardener(TreeInfo tree, RobotInfo[] robots) {
