@@ -41,8 +41,12 @@ public class ScoutBrain implements Brain {
 		if (nearbyGardener == true){
 			rc.move(rc.getLocation().directionTo(gardener));
 			rc.fireSingleShot(rc.getLocation().directionTo(gardener));
-			return;
 		}
+		//try to dodge anything killing us
+				if (rc.senseNearbyBullets().length!= 0){
+					dodge();
+				}
+				
 		//try to farm;
 		TreeInfo[] blah = rc.senseNearbyTrees();
 		boolean treesExist = false;
@@ -55,12 +59,6 @@ public class ScoutBrain implements Brain {
 		}
 		if (treesExist == true){
 			farm();
-			return;
-		}
-		//try to dodge anything killing us
-		if (rc.senseNearbyBullets().length!= 0){
-			dodge();
-			return;
 		}
 		
 		roam();
@@ -73,7 +71,7 @@ public class ScoutBrain implements Brain {
 		BulletInfo[] bullets = rc.senseNearbyBullets();
 		ArrayList<BulletInfo> dangerousBullets=  new ArrayList<BulletInfo>();
 		for (BulletInfo x : bullets){
-			if (x.getLocation().distanceTo(rc.getLocation())< 5 ){
+			if (x.getLocation().distanceTo(rc.getLocation())< 20 ){
 				Direction angleToBullet = rc.getLocation().directionTo(x.getLocation());
 				float angleBetween = x.getDir().degreesBetween(angleToBullet);
 				if (angleBetween < 90){
@@ -83,7 +81,6 @@ public class ScoutBrain implements Brain {
 		
 		}
 		if (dangerousBullets.size() == 0){
-			return;
 		}
 		else if (dangerousBullets.size() == 1){
 			//maximize angle between bbullet trajectory and nextlocation
@@ -112,7 +109,7 @@ public class ScoutBrain implements Brain {
 				y += j.speed * (Math.sin(angle/180 * Math.PI))/distance;
 			}
 			MapLocation destination = new MapLocation(rc.getLocation().x + x, rc.getLocation().y + y);
-			rc.move(destination);
+			rc.move(rc.getLocation().directionTo(destination));
 		}
 	}
 	private void stayOutOfRange(){
@@ -127,13 +124,12 @@ public class ScoutBrain implements Brain {
 						|| robotType == RobotType.TANK) {
 					if(robotType.sensorRadius < rc.getLocation().distanceTo(r.getLocation())){
 						dangerousRobots.add(r);
-						
 					}
 				}
 			}
 		}
 		
-		
+		//find best place to dodge by considering possible locations and maximizing the inverse square of the distances.
 	}
 	private void initialize() throws GameActionException {
 		current = Routine.GROUP;
@@ -163,6 +159,7 @@ public class ScoutBrain implements Brain {
 	}
 	
 	public void farm(){
+		System.out.println("start farming");
 		TreeInfo[] trees = rc.senseNearbyTrees();
 		//shake anything that you can
 		for(TreeInfo tree: trees){
@@ -188,8 +185,9 @@ public class ScoutBrain implements Brain {
 			}
 			}
 		//Attempt to move straight towards nearest tree
-		if(rc.canMove(rc.getLocation().directionTo(closestTree))){
+		if(!rc.hasMoved() && rc.canMove(rc.getLocation().directionTo(closestTree))){
 			try {
+				System.out.println("moving as intended" + rc.getRoundNum());
 				rc.move(rc.getLocation().directionTo(closestTree));
 			} catch (GameActionException e) {
 			}
@@ -199,6 +197,7 @@ public class ScoutBrain implements Brain {
 			for(float n = RobotType.SCOUT.strideRadius; n > 0; n -= RobotType.SCOUT.strideRadius/5){
 				if(!rc.hasMoved() && rc.canMove(rc.getLocation().directionTo(closestTree), n)){
 					try {
+						System.out.println("trying to move incrementally");
 						rc.move(rc.getLocation().directionTo(closestTree), n);
 					} catch (GameActionException e) {
 						// TODO Auto-generated catch block
@@ -215,8 +214,10 @@ public class ScoutBrain implements Brain {
 	public void jiggle(){
 		Direction[] directions = Directions.d6();
 		while(!rc.hasMoved()){
+			
 			try {
 				Direction rand = directions[(int)Math.random()*6];
+				System.out.println("Trying out random location " + rand);
 				if(rc.canMove(rand)){
 					rc.move(rand);
 				}
