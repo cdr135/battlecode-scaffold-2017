@@ -120,8 +120,12 @@ public class GardenerBrain implements Brain {
 		}*/
 		/**/
 
-		for (Direction dir : shuffle(direction))
-				rc.move(dir);/**/
+		for (Direction dir : shuffle(direction)){
+			if(!rc.hasMoved() && rc.canMove(dir)){
+				rc.move(dir);
+			}
+		}	
+		/**/
 		/*Direction dir;
 		do {
 			dir = new Direction((float) (Math.random()*2*Math.PI));
