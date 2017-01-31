@@ -104,25 +104,25 @@ public class GardenerBrain implements Brain {
 					continue;
 				boolean t_hg = hasOtherGardener(tree, nejworld);
 				Direction b = direction(rc.getLocation(),tree.location);
-				if (rc.canInteractWithTree(tree.ID)) {
-					if (t_hg) {
-						mp += 0.2;
-						for (Direction d : moveDirs.keySet())
-							if (Math.abs(d.degreesBetween(b)) < 40)
-								moveDirs.put(d, moveDirs.get(d)-1);
-							else
-								moveDirs.put(d, moveDirs.get(d)-.5+
-										d.radiansBetween(b)/2);
-					} else {
-						mp = Math.sqrt(mp * 0.6);
-						for (Direction d : moveDirs.keySet())
-							if (Math.abs(d.degreesBetween(b)) > 140)
-								moveDirs.put(d, moveDirs.get(d)-1);
-							else 
-								moveDirs.put(d, moveDirs.get(d)-.5+
-										d.radiansBetween(b)/2);
-					}
+				//if (rc.canInteractWithTree(tree.ID)) {
+				if (t_hg) {
+					mp += 0.2;
+					for (Direction d : moveDirs.keySet())
+						if (Math.abs(d.degreesBetween(b)) > 140)
+							moveDirs.put(d, moveDirs.get(d)-1);
+						else
+							moveDirs.put(d, moveDirs.get(d)-.5+
+									Math.abs(d.radiansBetween(b))/2);
 				} else {
+					mp = Math.sqrt(mp * 0.9);
+					for (Direction d : moveDirs.keySet())
+						if (Math.abs(d.degreesBetween(b)) < 40)
+							moveDirs.put(d, moveDirs.get(d)-1);
+						else 
+							moveDirs.put(d, moveDirs.get(d)-.5+
+									Math.abs(d.radiansBetween(b))/2);
+				}
+				/*} else {
 					if (!t_hg) {
 						mp += 0.1;
 						for (Direction d : moveDirs.keySet())
@@ -133,7 +133,7 @@ public class GardenerBrain implements Brain {
 							else moveDirs.put(d, moveDirs.get(d)+
 									(75+tree.health)/(95+d.degreesBetween(b)));
 					}
-				}
+				}*/
 			}
 			for (RobotInfo robot : nejworld)
 				if (robot.type == RobotType.ARCHON)
@@ -141,40 +141,44 @@ public class GardenerBrain implements Brain {
 						Direction b = direction(rc.getLocation(),robot.location);
 						if (Math.abs(d.degreesBetween(b)) < 30)
 							moveDirs.put(d, moveDirs.get(d) -
-									(3-d.radiansBetween(b))/Math.sqrt(
+									(3-Math.abs(d.radiansBetween(b)))/Math.sqrt(
 											distance(rc.getLocation(),
 													robot.location)));
 						else
 							moveDirs.put(d, moveDirs.get(d) -
-									(d.radiansBetween(b)-0.5)/Math.sqrt(
+									(Math.abs(d.radiansBetween(b))-0.5)/Math.sqrt(
 											distance(rc.getLocation(),
 													robot.location)));
 					}
 
-			for (Direction d : moveDirs.keySet())
-				rc.setIndicatorLine(rc.getLocation(), rc.getLocation().add(d, 1+moveDirs.get(d).floatValue()), 0, 0, 0);
-
 
 			double m = Double.MAX_VALUE, s = 0;
-			Direction md = null;
-			for (Double d : moveDirs.values()) s += d;
+			//Direction md = null;
 			Direction[] mvdir = moveDirs.keySet().toArray(new Direction[0]);
-			if (s < 0) {
-				for (Direction d : mvdir)
-					moveDirs.put(d, -1*moveDirs.get(d));
-				s *= -1;
-			}
-			for (Direction dir : shuffle(mvdir))
-				if (moveDirs.get(dir) < m) {
-					md = dir;
-					m = moveDirs.get(dir);
+			for (Direction d : mvdir) {
+				if (moveDirs.get(d) < m) {
+					/*md = d;*/ m = moveDirs.get(d);
 				}
-			s -= moveDirs.size() * m;
-			if (m < s / 99) {
-				for (Direction d : moveDirs.keySet())
-					moveDirs.put(d, (moveDirs.get(d) - m) + s / 99);
 			}
-			double[] thr = new double[moveDirs.size()];
+			for (Direction d : mvdir) {
+				moveDirs.put(d, moveDirs.get(d) - m);
+				s += moveDirs.get(d);
+			}
+			//s -= moveDirs.size() * m;
+			//if (m < s / 99) {
+			for (Direction d : moveDirs.keySet())
+				moveDirs.put(d, (moveDirs.get(d)) + s / 97);
+			//}
+			s *= 100/97;
+
+			for (Direction d : moveDirs.keySet())
+				rc.setIndicatorLine(rc.getLocation(), rc.getLocation().add(d,
+						(float) Math.min(1 + Math.abs(moveDirs.get(d).floatValue()),4)),
+						125*(int)(1-Math.signum(moveDirs.get(d))),
+						125*(int)(Math.signum(moveDirs.get(d))+1),
+						0);
+
+			double[] thr = new double[mvdir.length];
 			thr[0] = moveDirs.get(mvdir[0])/s;
 			int i;
 			for (i = 1; i < thr.length; i++)
