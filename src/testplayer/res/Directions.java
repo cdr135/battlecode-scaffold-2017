@@ -35,6 +35,13 @@ public enum Directions {
 		};
 		return r;
 	}
+	public static Direction[] d12() {
+		Direction[] r = {
+				D0.dir, D30.dir, D60.dir, D90.dir, D120.dir, D150.dir,
+				D180.dir, D210.dir, D240.dir, D270.dir, D300.dir, D330.dir
+		};
+		return r;
+	}
 	public static Direction dir(int deg) {
 		return new Direction((float) (deg*Math.PI/180));
 	}
