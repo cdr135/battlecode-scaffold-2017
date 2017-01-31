@@ -25,12 +25,11 @@ public class GardenerBrain implements Brain {
 	private boolean isLeader;
 
 	private void runTurn() throws GameActionException {
-		if (!startbuilding){
-			move();
-		}
+		Double mr = move();
 		TreeInfo[] treeinfo = rc.senseNearbyTrees();
 		RobotInfo[] nejworld = rc.senseNearbyRobots();
 		// find some way to balance economy of scout it works
+
 
 		if (builtScout == false && Globals.numScouts < Globals.MAX_SCOUTS) {
 			for (Direction dir : shuffle(direction)) {
@@ -60,10 +59,21 @@ public class GardenerBrain implements Brain {
 			if (tid != null)
 				rc.water(tid);
 		}
-		if (rc.getTeamBullets() >= 50) System.out.println((spt?"YES":"NO")+rc.getID());
-		
+		if (mr == null) spt = true;	//i cant move
+		else {
+			for (RobotInfo robot : nejworld)
+				if (robot.getTeam() == rc.getTeam() &&
+				robot.getType() == RobotType.ARCHON) {
+					if (mr < 1)
+						spt = false;
+				}
+		}
+
 		if (spt) for (Direction d : shuffle(direction)) {
 			if (rc.canPlantTree(d)) {
+				for (Direction di : direction) {
+					rc.setIndicatorDot(rc.getLocation().add(di,2), di==d?0:255, 0, di==d?255:0);
+				}
 				rc.plantTree(d);
 				break;
 			}
@@ -82,7 +92,11 @@ public class GardenerBrain implements Brain {
 		return false;
 	}
 
-	private void move() throws GameActionException {
+	private Double move() throws GameActionException {
+		double mp = 1;
+		Map<Direction, Double> moveDirs = new HashMap<Direction, Double>();
+		for (Direction d : Directions.d12()) if(rc.canMove(d)) moveDirs.put(d, 1.);
+		System.out.print(moveDirs.size()+"\t");
 		TreeInfo[] treeinfo = rc.senseNearbyTrees();
 		RobotInfo[] nejworld = rc.senseNearbyRobots();
 		MapLocation nearestGardner = null;
@@ -94,33 +108,104 @@ public class GardenerBrain implements Brain {
 			}
 		}*/
 
-		for (TreeInfo tree : treeinfo) treecheck: {
-			if (!tree.team.equals(rc.getTeam()))
-				continue;
-			if (rc.canInteractWithTree(tree.ID)) {
+		if (moveDirs.size() > 0) {
+			for (TreeInfo tree : treeinfo) treecheck: {
+				if (!tree.team.equals(rc.getTeam()))
+					continue;
 				boolean t_hg = hasOtherGardener(tree, nejworld);
-				/*for (RobotInfo r : nejworld) {
-					if (r.type == RobotType.GARDENER)
-						if (distance(r.location,tree.location)<=1) {
-							t_hg = true;
-							break;
-						}
-				}*/
-				if (!t_hg)
-					return;
+				Direction b = direction(rc.getLocation(),tree.location);
+				if (rc.canInteractWithTree(tree.ID)) {
+					if (t_hg) {
+						mp += 0.2;
+						for (Direction d : moveDirs.keySet())
+							if (Math.abs(d.degreesBetween(b)) < 40)
+								moveDirs.put(d, moveDirs.get(d)-1);
+							else
+								moveDirs.put(d, moveDirs.get(d)-.5+
+										d.radiansBetween(b)/2);
+					} else {
+						mp = Math.sqrt(mp * 0.6);
+						for (Direction d : moveDirs.keySet())
+							if (Math.abs(d.degreesBetween(b)) > 140)
+								moveDirs.put(d, moveDirs.get(d)-1);
+							else 
+								moveDirs.put(d, moveDirs.get(d)-.5+
+										d.radiansBetween(b)/2);
+					}
+				} else {
+					if (!t_hg) {
+						mp += 0.1;
+						for (Direction d : moveDirs.keySet())
+							if (Math.abs(d.degreesBetween(b)) > 60)
+								moveDirs.put(d, moveDirs.get(d)-
+										distance(rc.getLocation(),
+												tree.location)/2);
+							else moveDirs.put(d, moveDirs.get(d)+
+									(75+tree.health)/(95+d.degreesBetween(b)));
+					}
+				}
+			}
+			for (RobotInfo robot : nejworld)
+				if (robot.type == RobotType.ARCHON)
+					for (Direction d : moveDirs.keySet()){
+						Direction b = direction(rc.getLocation(),robot.location);
+						if (Math.abs(d.degreesBetween(b)) < 30)
+							moveDirs.put(d, moveDirs.get(d) -
+									(3-d.radiansBetween(b))/Math.sqrt(
+											distance(rc.getLocation(),
+													robot.location)));
+						else
+							moveDirs.put(d, moveDirs.get(d) -
+									(d.radiansBetween(b)-0.5)/Math.sqrt(
+											distance(rc.getLocation(),
+													robot.location)));
+					}
+			/**/
+			/*System.out.println(mp);
+			for (Direction dir : moveDirs.keySet()) System.out.print(Math.round(dir.getAngleDegrees())+":"+Math.round(1000*moveDirs.get(dir))/1000.+" ");
+			System.out.println();*/
+			for (Direction d : moveDirs.keySet())
+				rc.setIndicatorLine(rc.getLocation(), rc.getLocation().add(d, 1+moveDirs.get(d).floatValue()), 0, 0, 0);
+
+
+			double m = Double.MAX_VALUE, s = 0;
+			Direction md = null;
+			for (Double d : moveDirs.values()) s += d;
+			Direction[] mvdir = moveDirs.keySet().toArray(new Direction[0]);
+			if (s < 0) {
+				for (Direction d : mvdir)
+					moveDirs.put(d, -1*moveDirs.get(d));
+				s *= -1;
+			}
+			for (Direction dir : shuffle(mvdir))
+				if (moveDirs.get(dir) < m) {
+					md = dir;
+					m = moveDirs.get(dir);
+				}
+			s -= moveDirs.size() * m;
+			if (m < s / 99) {
+				for (Direction d : moveDirs.keySet())
+					moveDirs.put(d, (moveDirs.get(d) - m) + s / 99);
+			}
+			//for (Direction dir : moveDirs.keySet()) System.out.print(Math.round(dir.getAngleDegrees())+":"+Math.round(1000*moveDirs.get(dir))/1000.+" ");
+			//System.out.println(" \t"+s+"|"+m);
+			double[] thr = new double[moveDirs.size()];
+			thr[0] = moveDirs.get(mvdir[0])/s;
+			int i;
+			for (i = 1; i < thr.length; i++)
+				thr[i] = thr[i-1] + moveDirs.get(mvdir[i])/s;
+			double rand = Math.random();
+			while (i > 0) {
+				if (thr[--i] > rand)
+					if (!rc.hasMoved()){
+						if (Math.random() < mp)
+							rc.move(mvdir[i]);
+						return m;
+					}
 			}
 		}
-
-		/*if (nearestGardner == null) {
-			startbuilding = true;
-		}else {
-			if (rc.canMove(rc.getLocation().directionTo(nearestGardner).opposite())) {
-				rc.move(rc.getLocation().directionTo(nearestGardner).opposite());
-			} else {
-				startbuilding = true;
-			}
-		}*/
 		/**/
+		return null;
 	}
 
 	private void initialize() throws GameActionException {
