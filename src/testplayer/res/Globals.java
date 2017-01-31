@@ -4,7 +4,7 @@ public abstract class Globals {
 	// constants used in this context
 	
 	//arbitrary
-	public static final int MAX_SCOUTS = 9;
+	public static final int MAX_SCOUTS = 4;
 	
 	
 	
