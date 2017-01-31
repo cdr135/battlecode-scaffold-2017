@@ -33,7 +33,7 @@ public class ScoutBrain implements Brain {
 		MapLocation gardener = null;
 		for (RobotInfo x : nearby){
 			if (x.team.equals(rc.getTeam().opponent()) && x.type.equals(RobotType.GARDENER)){
-				if (rc.getLocation().distanceTo(x.getLocation()) < 1){
+				if (rc.getLocation().distanceTo(x.getLocation()) < 20){
 					nearbyGardener = true;
 					gardener = x.getLocation();
 				}
@@ -100,10 +100,10 @@ public class ScoutBrain implements Brain {
 			float angle1 = naw.dir.degreesBetween(naw.getLocation().directionTo(loc1));
 			float angle2 = naw.dir.degreesBetween(naw.getLocation().directionTo(loc2));
 			if (angle1 > angle2){
-				rc.move(dir);
+				moveAround(dir);
 			}
 			else{
-				rc.move(dir2);
+				moveAround(dir2);
 			}
 		}
 		else{
@@ -117,7 +117,7 @@ public class ScoutBrain implements Brain {
 				y += j.speed * (Math.sin(angle/180 * Math.PI))/distance;
 			}
 			MapLocation destination = new MapLocation(rc.getLocation().x + x, rc.getLocation().y + y);
-			rc.move(rc.getLocation().directionTo(destination));
+			moveAround(rc.getLocation().directionTo(destination));
 		}
 	}
 	private void stayOutOfRange(){
@@ -197,7 +197,7 @@ public class ScoutBrain implements Brain {
 		if(!rc.hasMoved() && rc.canMove(rc.getLocation().directionTo(closestTree))){
 			try {
 				System.out.println("moving as intended" + rc.getRoundNum());
-				rc.move(rc.getLocation().directionTo(closestTree));
+				moveAround(rc.getLocation().directionTo(closestTree));
 			} catch (GameActionException e) {
 			}
 		}
@@ -231,6 +231,20 @@ public class ScoutBrain implements Brain {
 					rc.move(rand);
 				}
 			} catch (GameActionException e) {
+			}
+		}
+	}
+	public void moveAround (Direction dir) throws GameActionException{
+		for (int i = 0; i < 12; i++){
+			Direction newDir = new Direction ((float) (dir.radians + Math.PI/24));
+			if (rc.canMove(newDir)){
+				rc.move(newDir);
+				break;
+			}
+			Direction newDir2 = new Direction ((float) ((dir.radians) - Math.PI/24));
+			if (rc.canMove(newDir2)){
+				rc.move(newDir2);
+				break;
 			}
 		}
 	}
