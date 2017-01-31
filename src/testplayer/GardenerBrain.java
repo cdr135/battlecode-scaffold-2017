@@ -53,7 +53,7 @@ public class GardenerBrain implements Brain {
 							mh = t.getHealth();
 							tid = t.getID();
 						}
-					} else if (distance(rc.getLocation(), t.location) <= 3.01)
+					} else if (distance(rc.getLocation(), t.location) <= 3.02)
 						spt = false;
 				}
 			}
@@ -75,7 +75,9 @@ public class GardenerBrain implements Brain {
 	private boolean hasOtherGardener(TreeInfo tree, RobotInfo[] robots) {
 		for (RobotInfo r : robots)
 			if (r.type == RobotType.GARDENER)
-				if (distance(r.location, tree.location) <= 1.01 + GameConstants.INTERACTION_DIST_FROM_EDGE)
+				if (distance(r.location, tree.location) <= 
+				1 + GameConstants.BULLET_TREE_RADIUS +
+				GameConstants.INTERACTION_DIST_FROM_EDGE)
 					return true;
 		return false;
 	}
@@ -119,14 +121,6 @@ public class GardenerBrain implements Brain {
 			}
 		}*/
 		/**/
-
-		for (Direction dir : shuffle(direction))
-				rc.move(dir);/**/
-		/*Direction dir;
-		do {
-			dir = new Direction((float) (Math.random()*2*Math.PI));
-		} while (!rc.canMove(dir));
-		rc.move(dir);*/
 	}
 
 	private void initialize() throws GameActionException {
@@ -136,26 +130,7 @@ public class GardenerBrain implements Brain {
 		radiusInc = 7;
 		space = true;
 		builtScout = false;
-		/*MapLocation hehe = new MapLocation(0, 0);
-		for (int i = 0; i < 6; i++) {
-			MapLocation heheNew = new MapLocation(hehe.x + (float) Math.cos(Math.PI / 3 * i),
-					hehe.y + (float) Math.sin(Math.PI / 3 * i));
-			direction[i] = hehe.directionTo(heheNew);
-		}*/
 		startbuilding = false;
-		{
-			Direction[] nd = new Direction[5];
-			for (Direction d : shuffle(direction)) {
-				RobotInfo r = rc.senseRobotAtLocation(rc.getLocation().add(d));
-				if (r != null && r.type == RobotType.ARCHON && r.getTeam() == rc.getTeam()) {
-					int i = 0;
-					for (Direction d1 : direction)
-						if (d1 != d) nd[i++] = d1;
-					direction = nd;
-					break;
-				}
-			}
-		}
 	}
 
 	@Override
