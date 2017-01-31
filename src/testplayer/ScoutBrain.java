@@ -41,8 +41,12 @@ public class ScoutBrain implements Brain {
 		if (nearbyGardener == true){
 			rc.move(rc.getLocation().directionTo(gardener));
 			rc.fireSingleShot(rc.getLocation().directionTo(gardener));
-			return;
 		}
+		//try to dodge anything killing us
+				if (rc.senseNearbyBullets().length!= 0){
+					dodge();
+				}
+				
 		//try to farm;
 		TreeInfo[] blah = rc.senseNearbyTrees();
 		boolean treesExist = false;
@@ -55,12 +59,6 @@ public class ScoutBrain implements Brain {
 		}
 		if (treesExist == true){
 			farm();
-			return;
-		}
-		//try to dodge anything killing us
-		if (rc.senseNearbyBullets().length!= 0){
-			dodge();
-			return;
 		}
 		
 		roam();
@@ -73,7 +71,7 @@ public class ScoutBrain implements Brain {
 		BulletInfo[] bullets = rc.senseNearbyBullets();
 		ArrayList<BulletInfo> dangerousBullets=  new ArrayList<BulletInfo>();
 		for (BulletInfo x : bullets){
-			if (x.getLocation().distanceTo(rc.getLocation())< 5 ){
+			if (x.getLocation().distanceTo(rc.getLocation())< 20 ){
 				Direction angleToBullet = rc.getLocation().directionTo(x.getLocation());
 				float angleBetween = x.getDir().degreesBetween(angleToBullet);
 				if (angleBetween < 90){
@@ -83,7 +81,6 @@ public class ScoutBrain implements Brain {
 		
 		}
 		if (dangerousBullets.size() == 0){
-			return;
 		}
 		else if (dangerousBullets.size() == 1){
 			//maximize angle between bbullet trajectory and nextlocation
@@ -112,7 +109,7 @@ public class ScoutBrain implements Brain {
 				y += j.speed * (Math.sin(angle/180 * Math.PI))/distance;
 			}
 			MapLocation destination = new MapLocation(rc.getLocation().x + x, rc.getLocation().y + y);
-			rc.move(destination);
+			rc.move(rc.getLocation().directionTo(destination));
 		}
 	}
 	private void stayOutOfRange(){
