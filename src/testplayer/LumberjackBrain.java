@@ -58,7 +58,7 @@ public class LumberjackBrain implements Brain {
 			if(rc.getLocation().distanceSquaredTo(target.location)>1) {
 				moveAround(rc.getLocation().directionTo(target.location));
 			}
-			else if(rc.canChop(target.location))
+			else if(rc.canInteractWithTree(target.location))
 				rc.chop(target.location);
 				
 		}
