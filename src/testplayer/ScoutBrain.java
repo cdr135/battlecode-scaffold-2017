@@ -153,11 +153,11 @@ public class ScoutBrain implements Brain {
 			float scratch;
 			MapLocation destination = null;
 			MapLocation testLocation = null;
-			for (int n = 0; n < directions.length; n++) {
+			for (int n = 0; n < 12; n++) {
 				scratch = 0;
 				testLocation = rc.getLocation().add(directions[n], RobotType.SCOUT.strideRadius);
 				for (RobotInfo robotInfo : dangerousRobots) {
-					scratch += 1 / (Math.pow(robotInfo.getLocation().distanceTo(rc.getLocation()), 2));
+					scratch += 1 / (Math.pow(robotInfo.getLocation().distanceTo(testLocation), 2));
 				}
 				//Only consider it as a move location if we can move one full stride, helps against being pinned down.
 				if (rc.canMove(rc.getLocation().directionTo(testLocation)) && scratch < smallestSumOfInverseSquares) {
@@ -166,9 +166,9 @@ public class ScoutBrain implements Brain {
 				}
 			}
 			rc.setIndicatorLine(rc.getLocation(), destination, 255, 255, 255);
-			if(rc.canMove(rc.getLocation().directionTo(testLocation))){
+			if(rc.canMove(rc.getLocation().directionTo(destination))){
 				try {
-					rc.move(rc.getLocation().directionTo(testLocation));
+					rc.move(rc.getLocation().directionTo(destination));
 				} catch (GameActionException e) {
 				}
 			}
