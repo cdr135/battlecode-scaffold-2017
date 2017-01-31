@@ -40,7 +40,7 @@ public class GardenerBrain implements Brain {
 							mh = t.getHealth();
 							tid = t.getID();
 						}
-					} else if (distance(rc.getLocation(), t.location) <= 3.02)
+					} else if (distance(rc.getLocation(), t.location) <= 3.1)
 						spt = false;
 				}
 			}
@@ -52,7 +52,7 @@ public class GardenerBrain implements Brain {
 			for (RobotInfo robot : nejworld)
 				if (robot.getTeam() == rc.getTeam() &&
 				robot.getType() == RobotType.ARCHON) {
-					if (mr < 1)
+					if (mr < 0.5)
 						spt = false;
 				}
 		}
@@ -70,7 +70,7 @@ public class GardenerBrain implements Brain {
 		// find some way to balance economy of scout it works
 
 
-		if (!builtScout && 4 * nejworld.length + treeinfo.length < 35) {
+		if (!builtScout && 4 * nejworld.length + treeinfo.length < 27) {
 			for (Direction dir : shuffle(direction)) {
 				if (rc.canBuildRobot(RobotType.SCOUT, dir)) {
 					rc.buildRobot(RobotType.SCOUT, dir);
