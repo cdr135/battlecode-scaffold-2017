@@ -51,6 +51,7 @@ public class ScoutBrain implements Brain {
 			}
 		}
 		if (nearbyGardener == true){
+			if (rc.canMove(Utils.direction(rc.getLocation(),gardener)) && !rc.hasMoved())
 			rc.move(rc.getLocation().directionTo(gardener));
 			rc.fireSingleShot(rc.getLocation().directionTo(gardener));
 		}
@@ -166,7 +167,7 @@ public class ScoutBrain implements Brain {
 				}
 			}
 			if (destination != null){
-				if(rc.canMove(rc.getLocation().directionTo(destination))){
+				if(rc.canMove(rc.getLocation().directionTo(destination)) && !rc.hasMoved()){
 					try {
 						rc.move(rc.getLocation().directionTo(destination));
 					} catch (GameActionException e) {
@@ -263,12 +264,12 @@ public class ScoutBrain implements Brain {
 		boolean pf = Math.random() < 0.5;
 		for (int i = 0; i < 12; i++){
 			Direction newDir = new Direction ((float) (dir.radians + (pf ? 1 : -1) * Math.PI/24));
-			if (rc.canMove(newDir)){
+			if (rc.canMove(newDir) && !rc.hasMoved()){
 				rc.move(newDir);
 				break;
 			}
 			Direction newDir2 = new Direction ((float) ((dir.radians) - (pf ? 1 : -1) * Math.PI/24));
-			if (rc.canMove(newDir2)){
+			if (rc.canMove(newDir2) && !rc.hasMoved()){
 				rc.move(newDir2);
 				break;
 			}
