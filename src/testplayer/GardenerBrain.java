@@ -31,11 +31,10 @@ public class GardenerBrain implements Brain {
 		// find some way to balance economy of scout it works
 
 
-		if (builtScout == false && Globals.numScouts < Globals.MAX_SCOUTS) {
+		if (builtScout == false) {
 			for (Direction dir : shuffle(direction)) {
 				if (rc.canBuildRobot(RobotType.SCOUT, dir)) {
 					rc.buildRobot(RobotType.SCOUT, dir);
-					Globals.numScouts++;
 					builtScout = true;
 					break;
 				}
