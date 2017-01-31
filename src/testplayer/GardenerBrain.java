@@ -121,7 +121,6 @@ public class GardenerBrain implements Brain {
 		/**/
 
 		for (Direction dir : shuffle(direction))
-			if (rc.canMove(dir))
 				rc.move(dir);/**/
 		/*Direction dir;
 		do {
