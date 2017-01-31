@@ -92,7 +92,6 @@ public class GardenerBrain implements Brain {
 	}
 
 	private Double move() throws GameActionException {
-		double mp = 1;
 		Map<Direction, Double> moveDirs = new HashMap<Direction, Double>();
 		for (Direction d : Directions.d12()) if(rc.canMove(d)) moveDirs.put(d, 1.);
 		TreeInfo[] treeinfo = rc.senseNearbyTrees();
@@ -106,25 +105,23 @@ public class GardenerBrain implements Brain {
 				Direction b = direction(rc.getLocation(),tree.location);
 				//if (rc.canInteractWithTree(tree.ID)) {
 				if (t_hg) {
-					mp += 0.2;
-					for (Direction d : moveDirs.keySet())
-						if (Math.abs(d.degreesBetween(b)) > 140)
-							moveDirs.put(d, moveDirs.get(d)-1);
-						else
-							moveDirs.put(d, moveDirs.get(d)-.5+
-									Math.abs(d.radiansBetween(b))/2);
-				} else {
-					mp = Math.sqrt(mp * 0.9);
 					for (Direction d : moveDirs.keySet())
 						if (Math.abs(d.degreesBetween(b)) < 40)
 							moveDirs.put(d, moveDirs.get(d)-1);
-						else 
-							moveDirs.put(d, moveDirs.get(d)-.5+
+						else
+							moveDirs.put(d, moveDirs.get(d)-.3+
 									Math.abs(d.radiansBetween(b))/2);
+				} else {
+					for (Direction d : moveDirs.keySet())
+						if (Math.abs(d.degreesBetween(b)) > 140)
+							moveDirs.put(d, moveDirs.get(d)-1.1);
+						else 
+							moveDirs.put(d, moveDirs.get(d)-.3+
+									Math.abs(d.radiansBetween(b))/2 + 9 / (1 +
+											d.radiansBetween(b))/2);
 				}
 				/*} else {
 					if (!t_hg) {
-						mp += 0.1;
 						for (Direction d : moveDirs.keySet())
 							if (Math.abs(d.degreesBetween(b)) > 60)
 								moveDirs.put(d, moveDirs.get(d)-
@@ -135,41 +132,54 @@ public class GardenerBrain implements Brain {
 					}
 				}*/
 			}
-			for (RobotInfo robot : nejworld)
-				if (robot.type == RobotType.ARCHON)
+			for (RobotInfo robot : nejworld){
+				if (!(robot.team == rc.getTeam()))
+					continue;
+				Direction b = direction(rc.getLocation(), robot.location);
+				switch (robot.type) {
+				case ARCHON:
 					for (Direction d : moveDirs.keySet()){
-						Direction b = direction(rc.getLocation(),robot.location);
-						if (Math.abs(d.degreesBetween(b)) < 30)
+						if (Math.abs(d.degreesBetween(b)) < 46)
 							moveDirs.put(d, moveDirs.get(d) -
-									(3-Math.abs(d.radiansBetween(b)))/Math.sqrt(
+									(3-Math.abs(d.radiansBetween(b))/2)/Math.sqrt(
 											distance(rc.getLocation(),
 													robot.location)));
 						else
-							moveDirs.put(d, moveDirs.get(d) -
+							moveDirs.put(d, moveDirs.get(d) +
 									(Math.abs(d.radiansBetween(b))-0.5)/Math.sqrt(
 											distance(rc.getLocation(),
 													robot.location)));
 					}
+					break;
+				case GARDENER:
+					for (Direction d : moveDirs.keySet()) {
+						// do something
+					}
+					break;
+				default:
+					break;
+				}
+			}
 
 
 			double m = Double.MAX_VALUE, s = 0;
-			//Direction md = null;
 			Direction[] mvdir = moveDirs.keySet().toArray(new Direction[0]);
 			for (Direction d : mvdir) {
+				s += moveDirs.get(d);
 				if (moveDirs.get(d) < m) {
-					/*md = d;*/ m = moveDirs.get(d);
+					m = moveDirs.get(d);
 				}
 			}
-			for (Direction d : mvdir) {
-				moveDirs.put(d, moveDirs.get(d) - m);
-				s += moveDirs.get(d);
+
+			if (m < s / 99){
+				for (Direction d : mvdir) {
+					moveDirs.put(d, moveDirs.get(d) - m);
+				}
+				s -= mvdir.length * m;
+				for (Direction d : moveDirs.keySet())
+					moveDirs.put(d, (moveDirs.get(d)) + s / 97);
+				s += mvdir.length/97 * s;
 			}
-			//s -= moveDirs.size() * m;
-			//if (m < s / 99) {
-			for (Direction d : moveDirs.keySet())
-				moveDirs.put(d, (moveDirs.get(d)) + s / 97);
-			//}
-			s *= 100/97;
 
 			for (Direction d : moveDirs.keySet())
 				rc.setIndicatorLine(rc.getLocation(), rc.getLocation().add(d,
@@ -184,11 +194,11 @@ public class GardenerBrain implements Brain {
 			for (i = 1; i < thr.length; i++)
 				thr[i] = thr[i-1] + moveDirs.get(mvdir[i])/s;
 			double rand = Math.random();
+			System.out.println(thr[thr.length-1]);
 			while (i > 0) {
 				if (thr[--i] > rand)
 					if (!rc.hasMoved()){
-						if (Math.random() < mp)
-							rc.move(mvdir[i]);
+						rc.move(mvdir[i]);
 						return m;
 					}
 			}
