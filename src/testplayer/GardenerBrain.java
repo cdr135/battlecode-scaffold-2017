@@ -97,17 +97,8 @@ public class GardenerBrain implements Brain {
 		double mp = 1;
 		Map<Direction, Double> moveDirs = new HashMap<Direction, Double>();
 		for (Direction d : Directions.d12()) if(rc.canMove(d)) moveDirs.put(d, 1.);
-		System.out.print(moveDirs.size()+"\t");
 		TreeInfo[] treeinfo = rc.senseNearbyTrees();
 		RobotInfo[] nejworld = rc.senseNearbyRobots();
-		MapLocation nearestGardner = null;
-		/*for (RobotInfo x : nejworld) {
-			if (x.getType().equals(RobotType.GARDENER)) {
-				if (x.getLocation().distanceTo(rc.getLocation()) < 5) {
-					nearestGardner = x.getLocation();
-				}
-			}
-		}*/
 
 		if (moveDirs.size() > 0) {
 			for (TreeInfo tree : treeinfo) treecheck: {
@@ -161,10 +152,7 @@ public class GardenerBrain implements Brain {
 											distance(rc.getLocation(),
 													robot.location)));
 					}
-			/**/
-			/*System.out.println(mp);
-			for (Direction dir : moveDirs.keySet()) System.out.print(Math.round(dir.getAngleDegrees())+":"+Math.round(1000*moveDirs.get(dir))/1000.+" ");
-			System.out.println();*/
+			
 			for (Direction d : moveDirs.keySet())
 				rc.setIndicatorLine(rc.getLocation(), rc.getLocation().add(d, 1+moveDirs.get(d).floatValue()), 0, 0, 0);
 
@@ -188,8 +176,6 @@ public class GardenerBrain implements Brain {
 				for (Direction d : moveDirs.keySet())
 					moveDirs.put(d, (moveDirs.get(d) - m) + s / 99);
 			}
-			//for (Direction dir : moveDirs.keySet()) System.out.print(Math.round(dir.getAngleDegrees())+":"+Math.round(1000*moveDirs.get(dir))/1000.+" ");
-			//System.out.println(" \t"+s+"|"+m);
 			double[] thr = new double[moveDirs.size()];
 			thr[0] = moveDirs.get(mvdir[0])/s;
 			int i;
