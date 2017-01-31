@@ -3,6 +3,7 @@ package testplayer;
 import java.util.*;
 import battlecode.common.*;
 import testplayer.res.*;
+import static testplayer.res.Utils.*;
 
 @SuppressWarnings("unused")
 public class ArchonBrain implements Brain {
@@ -39,16 +40,20 @@ public class ArchonBrain implements Brain {
 		}
 		
 		//if (numTrees/numGardeners >= 4 || numGardeners < 3){ //placeholder
-			for (Direction d : Utils.shuffle(dirs))
+		if (numGardeners < 11 && rc.getTeamBullets() > 100)
+			for (Direction d : shuffle(dirs))
 				if (rc.canBuildRobot(RobotType.GARDENER, d)){
 					rc.buildRobot(RobotType.GARDENER, d);
 					break;
 				}
 				
 		//}
-		if (rc.getTeamBullets() > 250){
+		if (rc.getTeamBullets() > 250 + 1.5 * Math.log(rc.getRobotCount() + rc.getRoundNum())){
 			rc.donate((float) (Math.round(rc.getTeamBullets()/(20*rc.getVictoryPointCost()))*rc.getVictoryPointCost()+.000000001));
 		}
+		// if we can instantly win the game, win
+		if (rc.getTeamBullets() >= (1000 - rc.getTeamVictoryPoints()) * rc.getVictoryPointCost())
+			rc.donate((float) ((1000 - rc.getTeamVictoryPoints()) * rc.getVictoryPointCost() + 0.000000001));
 		BulletInfo[] bleh = rc.senseNearbyBullets();
 		//insert dodge script here/movement
 		}
