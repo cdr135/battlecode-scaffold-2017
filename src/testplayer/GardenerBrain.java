@@ -70,7 +70,7 @@ public class GardenerBrain implements Brain {
 		// find some way to balance economy of scout it works
 
 
-		if (!builtScout && 4 * nejworld.length + treeinfo.length < 27) {
+		if (!builtScout && 3 * nejworld.length + treeinfo.length < 10) {
 			for (Direction dir : shuffle(direction)) {
 				if (rc.canBuildRobot(RobotType.SCOUT, dir)) {
 					rc.buildRobot(RobotType.SCOUT, dir);
