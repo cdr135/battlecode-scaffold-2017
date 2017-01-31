@@ -22,10 +22,7 @@ public class ScoutBrain implements Brain {
 
 	private void runTurn() throws GameActionException {
 		BulletInfo[] bullets = rc.senseNearbyBullets();
-		//1. dodge 2. stay out of range 3. farm 4. kill gardeners 5. move randomly
-		dodge();
 		move();
-		farm();
 		
 		}
 	private void move() throws GameActionException{
@@ -46,10 +43,30 @@ public class ScoutBrain implements Brain {
 			rc.fireSingleShot(rc.getLocation().directionTo(gardener));
 			return;
 		}
-		//try to dodge anything killing us
-		dodge();
 		//try to farm;
+		TreeInfo[] blah = rc.senseNearbyTrees();
+		boolean treesExist = false;
+		for (TreeInfo x : blah){
+			if (x.getTeam().equals(Team.NEUTRAL)){
+				if (x.containedBullets != 0){
+					treesExist = true;
+				}
+			}
+		}
+		if (treesExist == true){
+			farm();
+			return;
+		}
+		//try to dodge anything killing us
+		if (rc.senseNearbyBullets().length!= 0){
+			dodge();
+			return;
+		}
 		
+		roam();
+	}
+	
+	private void roam() throws GameActionException{
 		
 	}
 	private void dodge() throws GameActionException{
@@ -169,7 +186,7 @@ public class ScoutBrain implements Brain {
 					closestTree = tree.getLocation();	
 				}
 			}
-		}
+			}
 		//Attempt to move straight towards nearest tree
 		if(rc.canMove(rc.getLocation().directionTo(closestTree))){
 			try {
