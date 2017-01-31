@@ -21,14 +21,35 @@ public class ScoutBrain implements Brain {
 	private boolean isLeader;
 
 	private void runTurn() throws GameActionException {
-		BulletInfo[] bullets = rc.senseNearbyBullets(); //1. dodge 2. stay out of range 3. farm 4. kill gardeners 5. move randomly
+		BulletInfo[] bullets = rc.senseNearbyBullets();
+		//1. dodge 2. stay out of range 3. farm 4. kill gardeners 5. move randomly
 		dodge();
-		stayOutOfRange();
+		move();
 		farm();
 		
 		}
 	private void move() throws GameActionException{
+		//if we're already close to a gardener just continue shooting
+		RobotInfo[] nearby = rc.senseNearbyRobots();
+		boolean nearbyGardener = false;
+		MapLocation gardener = null;
+		for (RobotInfo x : nearby){
+			if (x.team.equals(rc.getTeam().opponent()) && x.type.equals(RobotType.GARDENER)){
+				if (rc.getLocation().distanceTo(x.getLocation()) < 1){
+					nearbyGardener = true;
+					gardener = x.getLocation();
+				}
+			}
+		}
+		if (nearbyGardener == true){
+			rc.move(rc.getLocation().directionTo(gardener));
+			rc.fireSingleShot(rc.getLocation().directionTo(gardener));
+			return;
+		}
+		//try to dodge anything killing us
 		dodge();
+		//try to farm;
+		
 		
 	}
 	private void dodge() throws GameActionException{
