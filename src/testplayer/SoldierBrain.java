@@ -29,15 +29,15 @@ public class SoldierBrain implements Brain {
 			RobotInfo[] enemies = rc.senseNearbyRobots((float)radius,rc.getTeam().opponent());
 			if(enemies.length>0) {
 				RobotInfo closest = enemies[0];
-				double length = rc.getLocation().distanceSquaredTo(closest.getLocation());
+				double length = rc.getLocation().distanceTo(closest.getLocation());
 				for(RobotInfo r: enemies) {
-					double newLength = rc.getLocation().distanceSquaredTo(r.getLocation());
+					double newLength = rc.getLocation().distanceTo(r.getLocation());
 					if(newLength<length) {
 						closest=r;
 						length=newLength;
 					}
 				}
-				if(length<16) {
+				if(length<9) {
 					rc.fireTriadShot(rc.getLocation().directionTo(closest.getLocation()));
 				}
 			}
@@ -79,16 +79,19 @@ public class SoldierBrain implements Brain {
 			}
 			
 		}
+		if (!rc.hasMoved()){
+			roam();
+		}
 		
 	}
 	private void roam() throws GameActionException{
-		if (!rc.hasMoved() && rc.canMove(roam)){
-			rc.move(roam);
-		}
-		else{
-			roam = new Direction ((float) (roam.radians + (float) (3/4*Math.PI)));
-			if(!rc.hasMoved() && rc.canMove(roam)){
-				rc.move(roam);
+		if (!rc.hasMoved()){
+			for (int i = 0; i < 360; i++){
+				roam.rotateRightDegrees(1);
+				if (rc.canMove(roam)){
+					rc.move(roam);
+					break;
+				}
 			}
 		}
 		

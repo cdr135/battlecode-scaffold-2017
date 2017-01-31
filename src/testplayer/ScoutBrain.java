@@ -165,13 +165,15 @@ public class ScoutBrain implements Brain {
 					smallestSumOfInverseSquares = scratch;
 				}
 			}
-			rc.setIndicatorLine(rc.getLocation(), destination, 255, 255, 255);
-			if(rc.canMove(rc.getLocation().directionTo(destination))){
-				try {
-					rc.move(rc.getLocation().directionTo(destination));
-				} catch (GameActionException e) {
+			if (destination != null){
+				if(rc.canMove(rc.getLocation().directionTo(destination))){
+					try {
+						rc.move(rc.getLocation().directionTo(destination));
+					} catch (GameActionException e) {
+					}
 				}
 			}
+			
 		}
 		
 	}

@@ -40,7 +40,7 @@ public class ArchonBrain implements Brain {
 		}
 		
 		//if (numTrees/numGardeners >= 4 || numGardeners < 3){ //placeholder
-		if (numGardeners < 11 && rc.getTeamBullets() > 100)
+		if (numGardeners < 4 && rc.getTeamBullets() > 150)
 			for (Direction d : shuffle(dirs))
 				if (rc.canBuildRobot(RobotType.GARDENER, d)){
 					rc.buildRobot(RobotType.GARDENER, d);
