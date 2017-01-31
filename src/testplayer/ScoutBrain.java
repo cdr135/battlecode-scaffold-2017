@@ -14,6 +14,7 @@ public class ScoutBrain implements Brain {
 	private double radius;
 	private int radiusInc;
 	private boolean space;
+	private Direction roam;
 	// private List<MapLocation> knownEnemyArchons;
 
 	private Map<Integer, RobotInfo> robots;
@@ -65,6 +66,13 @@ public class ScoutBrain implements Brain {
 	}
 	
 	private void roam() throws GameActionException{
+		if (rc.canMove(roam)){
+			rc.move(roam);
+		}
+		else{
+			roam = new Direction (roam.radians + (float) Math.PI/2);
+			rc.move(roam);
+		}
 		
 	}
 	private void dodge() throws GameActionException{
@@ -137,6 +145,7 @@ public class ScoutBrain implements Brain {
 		radius = 8;
 		radiusInc = 7;
 		space = true;
+		roam = (Directions.d12()[(int)(Math.random()*12)]);
 	}
 
 	@Override
