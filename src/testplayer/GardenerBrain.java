@@ -25,39 +25,39 @@ public class GardenerBrain implements Brain {
 	private boolean isLeader;
 
 	private void runTurn() throws GameActionException {
-		Double mr = move();
+		Double moved = move();
 		TreeInfo[] treeinfo = rc.senseNearbyTrees();
-		RobotInfo[] nejworld = rc.senseNearbyRobots();
+		RobotInfo[] robotinfo = rc.senseNearbyRobots();
 
-		boolean spt = true;
+		boolean shouldPlantTree = true;
 		{
-			float mh = 51;
-			Integer tid = null;
+			float minHP = 51;
+			Integer treeID = null;
 			for (TreeInfo t : treeinfo) {
 				if (t.getTeam().equals(rc.getTeam())) {
 					if (rc.canInteractWithTree(t.ID)) {
-						if  (t.getHealth() < mh) {
-							mh = t.getHealth();
-							tid = t.getID();
+						if  (t.getHealth() < minHP) {
+							minHP = t.getHealth();
+							treeID = t.getID();
 						}
 					} else if (distance(rc.getLocation(), t.location) <= 3.1)
-						spt = false;
+						shouldPlantTree = false;
 				}
 			}
-			if (tid != null)
-				rc.water(tid);
+			if (treeID != null)
+				rc.water(treeID);
 		}
-		if (mr == null) spt = true;	//i cant move
+		if (moved == null) shouldPlantTree = true;	//i cant move
 		else {
-			for (RobotInfo robot : nejworld)
+			for (RobotInfo robot : robotinfo)
 				if (robot.getTeam() == rc.getTeam() &&
 				robot.getType() == RobotType.ARCHON) {
-					if (mr < 0.5)
-						spt = false;
+					if (moved < 0.5)
+						shouldPlantTree = false;
 				}
 		}
 
-		if (spt) for (Direction d : shuffle(direction)) {
+		if (shouldPlantTree) for (Direction d : shuffle(direction)) {
 			if (rc.canPlantTree(d)) {
 				for (Direction di : direction) {
 					rc.setIndicatorDot(rc.getLocation().add(di,2), di==d?0:255, 0, di==d?255:0);
@@ -70,7 +70,7 @@ public class GardenerBrain implements Brain {
 		// find some way to balance economy of scout it works
 
 
-		if (!builtScout && 3 * nejworld.length + treeinfo.length < 10) {
+		if (!builtScout && 3 * robotinfo.length + treeinfo.length < 10) {
 			for (Direction dir : shuffle(direction)) {
 				if (rc.canBuildRobot(RobotType.SCOUT, dir)) {
 					rc.buildRobot(RobotType.SCOUT, dir);
@@ -92,33 +92,34 @@ public class GardenerBrain implements Brain {
 	}
 
 	private Double move() throws GameActionException {
-		Map<Direction, Double> moveDirs = new HashMap<Direction, Double>();
-		for (Direction d : Directions.d12()) if(rc.canMove(d)) moveDirs.put(d, 1.);
+		Map<Direction, Double> directionWeights = new HashMap<Direction, Double>();
+		for (Direction d : Directions.d12()) if(rc.canMove(d)) directionWeights.put(d, 1.);
 		TreeInfo[] treeinfo = rc.senseNearbyTrees();
 		RobotInfo[] nejworld = rc.senseNearbyRobots();
 
-		if (moveDirs.size() > 0) {
+		if (directionWeights.size() > 0) {
+			Direction[] directions = directionWeights.keySet().toArray(new Direction[0]);
 			for (TreeInfo tree : treeinfo) treecheck: {
 				if (!tree.team.equals(rc.getTeam()))
 					continue;
-				boolean t_hg = hasOtherGardener(tree, nejworld);
-				Direction b = direction(rc.getLocation(),tree.location);
+				boolean t_hasGardener = hasOtherGardener(tree, nejworld);
+				Direction bearing = direction(rc.getLocation(),tree.location);
 				//if (rc.canInteractWithTree(tree.ID)) {
-				if (t_hg) {
-					for (Direction d : moveDirs.keySet())
-						if (Math.abs(d.degreesBetween(b)) < 40)
-							moveDirs.put(d, moveDirs.get(d)-1);
+				if (t_hasGardener) {
+					for (Direction d : directions)
+						if (Math.abs(d.degreesBetween(bearing)) < 40)
+							directionWeights.put(d, directionWeights.get(d)-1);
 						else
-							moveDirs.put(d, moveDirs.get(d)-.3+
-									Math.abs(d.radiansBetween(b))/2);
+							directionWeights.put(d, directionWeights.get(d)-.3+
+									Math.abs(d.radiansBetween(bearing))/2);
 				} else {
-					for (Direction d : moveDirs.keySet())
-						if (Math.abs(d.degreesBetween(b)) > 140)
-							moveDirs.put(d, moveDirs.get(d)-1.1);
+					for (Direction d : directions)
+						if (Math.abs(d.degreesBetween(bearing)) > 140)
+							directionWeights.put(d, directionWeights.get(d)-1.1);
 						else 
-							moveDirs.put(d, moveDirs.get(d)-.3+
-									Math.abs(d.radiansBetween(b))/2 + 9 / (1 +
-											d.radiansBetween(b))/2);
+							directionWeights.put(d, directionWeights.get(d)-.3+
+									Math.abs(d.radiansBetween(bearing))/2 + 9 / (1 +
+											d.radiansBetween(bearing))/2);
 				}
 				/*} else {
 					if (!t_hg) {
@@ -135,24 +136,24 @@ public class GardenerBrain implements Brain {
 			for (RobotInfo robot : nejworld){
 				if (!(robot.team == rc.getTeam()))
 					continue;
-				Direction b = direction(rc.getLocation(), robot.location);
+				Direction bearing = direction(rc.getLocation(), robot.location);
 				switch (robot.type) {
 				case ARCHON:
-					for (Direction d : moveDirs.keySet()){
-						if (Math.abs(d.degreesBetween(b)) < 46)
-							moveDirs.put(d, moveDirs.get(d) -
-									(3-Math.abs(d.radiansBetween(b))/2)/Math.sqrt(
+					for (Direction d : directions){
+						if (Math.abs(d.degreesBetween(bearing)) < 46)
+							directionWeights.put(d, directionWeights.get(d) -
+									(3-Math.abs(d.radiansBetween(bearing))/2)/Math.sqrt(
 											distance(rc.getLocation(),
 													robot.location)));
 						else
-							moveDirs.put(d, moveDirs.get(d) +
-									(Math.abs(d.radiansBetween(b))-0.5)/Math.sqrt(
+							directionWeights.put(d, directionWeights.get(d) +
+									(Math.abs(d.radiansBetween(bearing))-0.5)/Math.sqrt(
 											distance(rc.getLocation(),
 													robot.location)));
 					}
 					break;
 				case GARDENER:
-					for (Direction d : moveDirs.keySet()) {
+					for (Direction d : directions) {
 						// do something
 					}
 					break;
@@ -162,49 +163,48 @@ public class GardenerBrain implements Brain {
 			}
 
 
-			double m = Double.MAX_VALUE, s = 0;
-			Direction[] mvdir = moveDirs.keySet().toArray(new Direction[0]);
-			for (Direction d : mvdir) {
-				s += moveDirs.get(d);
-				if (moveDirs.get(d) < m) {
-					m = moveDirs.get(d);
+			double min = Double.MAX_VALUE, sum = 0;
+			for (Direction d : directions) {
+				sum += directionWeights.get(d);
+				if (directionWeights.get(d) < min) {
+					min = directionWeights.get(d);
 				}
 			}
 
-			if (m < s / 99){
-				for (Direction d : mvdir) {
-					moveDirs.put(d, moveDirs.get(d) - m);
+			if (min < sum / 99){
+				for (Direction d : directions) {
+					directionWeights.put(d, directionWeights.get(d) - min);
 				}
-				s -= mvdir.length * m;
-				for (Direction d : moveDirs.keySet())
-					moveDirs.put(d, (moveDirs.get(d)) + s / 97);
-				s += mvdir.length/97 * s;
+				sum -= directions.length * min;
+				for (Direction d : directionWeights.keySet())
+					directionWeights.put(d, (directionWeights.get(d)) + sum / 97);
+				sum += directions.length/97 * sum;
 			}
 
-			for (Direction d : moveDirs.keySet())
+			for (Direction d : directionWeights.keySet())
 				rc.setIndicatorLine(rc.getLocation(), rc.getLocation().add(d,
-						(float) Math.min(1 + Math.abs(moveDirs.get(d).floatValue()),4)),
-						125*(int)(1-Math.signum(moveDirs.get(d))),
-						125*(int)(Math.signum(moveDirs.get(d))+1),
+						(float) Math.min(1 + Math.abs(directionWeights.get(d).floatValue()),4)),
+						125*(int)(1-Math.signum(directionWeights.get(d))),
+						125*(int)(Math.signum(directionWeights.get(d))+1),
 						0);
 
-			double[] thr = new double[mvdir.length];
-			thr[0] = moveDirs.get(mvdir[0])/s;
+			double[] threshold = new double[directions.length];
+			threshold[0] = directionWeights.get(directions[0])/sum;
 			int i;
-			for (i = 1; i < thr.length; i++)
-				thr[i] = thr[i-1] + moveDirs.get(mvdir[i])/s;
+			for (i = 1; i < threshold.length; i++)
+				threshold[i] = threshold[i-1] + directionWeights.get(directions[i])/sum;
 			double rand = Math.random();
-			System.out.println(thr[thr.length-1]);
+			System.out.println(threshold[threshold.length-1]);
 			while (i > 0) {
-				if (thr[--i] > rand)
+				if (threshold[--i] > rand)
 					if (!rc.hasMoved()){
-						rc.move(mvdir[i]);
-						return m;
+						rc.move(directions[i]);
+						return min;		//returns min if you moved
 					}
 			}
 		}
 		/**/
-		return null;
+		return null;		//didn't move
 	}
 
 	private void initialize() throws GameActionException {
