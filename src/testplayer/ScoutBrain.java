@@ -72,12 +72,12 @@ public class ScoutBrain implements Brain {
 	}
 	
 	private void roam() throws GameActionException{
-		if (rc.canMove(roam)){
+		if (!rc.hasMoved() && rc.canMove(roam)){
 			rc.move(roam);
 		}
 		else{
 			roam = new Direction (roam.radians + (float) Math.PI/2);
-			if(rc.canMove(roam)){
+			if(!rc.hasMoved() && rc.canMove(roam)){
 				rc.move(roam);
 			}
 		}

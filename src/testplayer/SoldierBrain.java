@@ -82,12 +82,12 @@ public class SoldierBrain implements Brain {
 		
 	}
 	private void roam() throws GameActionException{
-		if (rc.canMove(roam)){
+		if (!rc.hasMoved() && rc.canMove(roam)){
 			rc.move(roam);
 		}
 		else{
 			roam = new Direction ((float) (roam.radians + (float) (3/4*Math.PI)));
-			if(rc.canMove(roam)){
+			if(!rc.hasMoved() && rc.canMove(roam)){
 				rc.move(roam);
 			}
 		}
