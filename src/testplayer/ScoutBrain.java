@@ -51,9 +51,10 @@ public class ScoutBrain implements Brain {
 			}
 		}
 		if (nearbyGardener == true){
-			if (rc.canMove(Utils.direction(rc.getLocation(),gardener)) && !rc.hasMoved())
-			rc.move(rc.getLocation().directionTo(gardener));
-			rc.fireSingleShot(rc.getLocation().directionTo(gardener));
+			if (rc.canMove(rc.getLocation().directionTo(gardener)) && !rc.hasMoved())
+				rc.move(rc.getLocation().directionTo(gardener));
+			if(rc.canFireSingleShot())
+				rc.fireSingleShot(rc.getLocation().directionTo(gardener));
 		}
 		//try to farm;
 		TreeInfo[] blah = rc.senseNearbyTrees();
@@ -139,7 +140,7 @@ public class ScoutBrain implements Brain {
 				RobotType robotType = r.getType();
 				if (robotType == RobotType.SCOUT || robotType == RobotType.SOLDIER || robotType == RobotType.LUMBERJACK
 						|| robotType == RobotType.TANK) {
-					if(robotType.sensorRadius < rc.getLocation().distanceTo(r.getLocation())){
+					if(robotType.sensorRadius*2/3  > rc.getLocation().distanceTo(r.getLocation())){
 						dangerousRobots.add(r);
 						rc.setIndicatorLine(rc.getLocation(), r.getLocation(), 0, 0, 0); 
 					}
