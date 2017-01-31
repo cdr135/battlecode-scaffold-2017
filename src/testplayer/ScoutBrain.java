@@ -22,6 +22,8 @@ public class ScoutBrain implements Brain {
 
 	private void runTurn() throws GameActionException {
 		BulletInfo[] bullets = rc.senseNearbyBullets(); //1. dodge 2. stay out of range 3. farm 4. kill gardeners 5. move randomly
+		dodge();
+		stayOutOfRange();
 		farm();
 		
 		}
@@ -30,6 +32,36 @@ public class ScoutBrain implements Brain {
 		
 	}
 	private void dodge(){
+		BulletInfo[] bullets = rc.senseNearbyBullets();
+		ArrayList<BulletInfo> dangerousBullets=  new ArrayList<BulletInfo>();
+		for (BulletInfo x : bullets){
+			if (x.getLocation().distanceTo(rc.getLocation())< 5 ){
+				float angleToBullet = rc.getLocation().directionTo(x.getLocation()).getAngleDegrees();
+				if (angleToBullet <= (x.getDir().getAngleDegrees() + 45)  && angleToBullet >= (x.getDir().getAngleDegrees() - 45)){
+					dangerousBullets.add(x);
+				}
+			}
+			
+		}
+	}
+	private void stayOutOfRange(){
+		RobotInfo[] robots = rc.senseNearbyRobots();
+		
+		//collect list of dangerous robots, based on their individual sight radius'
+		ArrayList<RobotInfo> dangerousRobots = new ArrayList<RobotInfo>();
+		for(RobotInfo r: robots){
+			if(r.getTeam() != rc.getTeam()){
+				RobotType robotType = r.getType();
+				if (robotType == RobotType.SCOUT || robotType == RobotType.SOLDIER || robotType == RobotType.LUMBERJACK
+						|| robotType == RobotType.TANK) {
+					if(robotType.sensorRadius < rc.getLocation().distanceTo(r.getLocation())){
+						dangerousRobots.add(r);
+						
+					}
+				}
+			}
+		}
+		
 		
 	}
 	private void initialize() throws GameActionException {
@@ -72,6 +104,7 @@ public class ScoutBrain implements Brain {
 				}
 		}
 		//move towards unshaken trees
+		
 		MapLocation closestTree = trees[0].getLocation();
 		float closestDistance = 99999;
 		//look for closest unshaken trees and try to move towards them
@@ -79,14 +112,45 @@ public class ScoutBrain implements Brain {
 			if(tree.getContainedBullets()!=0){
 				if(rc.getLocation().distanceTo(tree.getLocation())<closestDistance){
 					closestDistance = rc.getLocation().distanceTo(tree.getLocation());
-					closestTree = tree.getLocation();
+					closestTree = tree.getLocation();	
 				}
 			}
 		}
-		try {
-			rc.move(rc.getLocation().directionTo(closestTree));
-		} catch (GameActionException e) {
+		//Attempt to move straight towards nearest tree
+		if(rc.canMove(rc.getLocation().directionTo(closestTree))){
+			try {
+				rc.move(rc.getLocation().directionTo(closestTree));
+			} catch (GameActionException e) {
+			}
+		}
+		//Try to move as close as possible to tree
+		else{
+			for(float n = RobotType.SCOUT.strideRadius; n > 0; n -= RobotType.SCOUT.strideRadius/5){
+				if(!rc.hasMoved() && rc.canMove(rc.getLocation().directionTo(closestTree), n)){
+					try {
+						rc.move(rc.getLocation().directionTo(closestTree), n);
+					} catch (GameActionException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+			}
+			//If still blocked, wander around to try to find other path
+			if(!rc.hasMoved())
+				jiggle();
 		}
 	}
-
+	//moves scout in random direction
+	public void jiggle(){
+		Direction[] directions = Directions.d6();
+		while(!rc.hasMoved()){
+			try {
+				Direction rand = directions[(int)Math.random()*6];
+				if(rc.canMove(rand)){
+					rc.move(rand);
+				}
+			} catch (GameActionException e) {
+			}
+		}
+	}
 }
