@@ -70,7 +70,9 @@ public class ScoutBrain implements Brain {
 		}
 		else{
 			roam = new Direction (roam.radians + (float) Math.PI/2);
-			rc.move(roam);
+			if(rc.canMove(roam)){
+				rc.move(roam);
+			}
 		}
 		
 	}
@@ -198,6 +200,7 @@ public class ScoutBrain implements Brain {
 				System.out.println("moving as intended" + rc.getRoundNum());
 				moveAround(rc.getLocation().directionTo(closestTree));
 			} catch (GameActionException e) {
+				
 			}
 		}
 		//Try to move as close as possible to tree
@@ -214,25 +217,16 @@ public class ScoutBrain implements Brain {
 				}
 			}
 			//If still blocked, wander around to try to find other path
-			if(!rc.hasMoved())
-				jiggle();
-		}
-	}
-	//moves scout in random direction
-	public void jiggle(){
-		Direction[] directions = Directions.d6();
-		while(!rc.hasMoved()){
-			
-			try {
-				Direction rand = directions[(int)Math.random()*6];
-				System.out.println("Trying out random location " + rand);
-				if(rc.canMove(rand)){
-					rc.move(rand);
+			if(!rc.hasMoved()){
+				try {
+					roam();
+				} catch (GameActionException e) {
+					
 				}
-			} catch (GameActionException e) {
 			}
 		}
 	}
+	
 	public void moveAround (Direction dir) throws GameActionException{
 		for (int i = 0; i < 12; i++){
 			Direction newDir = new Direction ((float) (dir.radians + Math.PI/24));
