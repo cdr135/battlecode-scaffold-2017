@@ -24,6 +24,7 @@ public class SoldierBrain implements Brain {
 	private void runTurn() throws GameActionException {
 		//TODO: add dodging
 		//fires triad at closest robot if <4 away
+		move();
 		if(rc.canFireTriadShot()) {
 			RobotInfo[] enemies = rc.senseNearbyRobots((float)radius,rc.getTeam().opponent());
 			if(enemies.length>0) {
@@ -41,7 +42,6 @@ public class SoldierBrain implements Brain {
 				}
 			}
 		}
-		move();
 			
 		}
 	private void move() throws GameActionException{
@@ -52,7 +52,7 @@ public class SoldierBrain implements Brain {
 		RobotInfo closest = null;
 		for (RobotInfo x: hostile){
 			if (x.getType().equals(RobotType.SOLDIER) || x.getType().equals(RobotType.LUMBERJACK)){
-				if (closest.equals(null)){
+				if (closest == null){
 					closest = x;
 				}
 				else{
@@ -64,7 +64,7 @@ public class SoldierBrain implements Brain {
 			}
 			
 		}
-		if (closest.equals(null)){
+		if (closest == null){
 			roam();
 		}
 		else{
@@ -83,7 +83,7 @@ public class SoldierBrain implements Brain {
 	}
 	private void roam() throws GameActionException{
 		if (rc.canMove(roam)){
-			rc.move(roam);
+			moveAround(roam);
 		}
 		else{
 			roam = new Direction ((float) (roam.radians + (float) (3/4*Math.PI)));
@@ -144,6 +144,7 @@ public class SoldierBrain implements Brain {
 		radius = 8;
 		radiusInc = 7;
 		space = true;
+		roam = (Directions.d12()[(int)(Math.random()*12)]);
 	}
 
 	@Override
