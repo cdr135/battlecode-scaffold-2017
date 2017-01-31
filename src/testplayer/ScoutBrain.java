@@ -260,13 +260,14 @@ public class ScoutBrain implements Brain {
 	}
 	
 	public void moveAround (Direction dir) throws GameActionException{
+		boolean pf = Math.random() < 0.5;
 		for (int i = 0; i < 12; i++){
-			Direction newDir = new Direction ((float) (dir.radians + Math.PI/24));
+			Direction newDir = new Direction ((float) (dir.radians + (pf ? 1 : -1) * Math.PI/24));
 			if (rc.canMove(newDir)){
 				rc.move(newDir);
 				break;
 			}
-			Direction newDir2 = new Direction ((float) ((dir.radians) - Math.PI/24));
+			Direction newDir2 = new Direction ((float) ((dir.radians) - (pf ? 1 : -1) * Math.PI/24));
 			if (rc.canMove(newDir2)){
 				rc.move(newDir2);
 				break;

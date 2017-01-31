@@ -3,6 +3,7 @@ package testplayer;
 import java.util.*;
 import battlecode.common.*;
 import testplayer.res.*;
+import static testplayer.res.Utils.*;
 
 @SuppressWarnings("unused")
 public class LumberjackBrain implements Brain {
@@ -29,21 +30,7 @@ public class LumberjackBrain implements Brain {
 		// looks for trees to chop
 		RobotInfo[] enemies = rc.senseNearbyRobots();
 		boolean nearbyGardener = false;
-		MapLocation gardener = null;
-		for (RobotInfo x : enemies) {
-			if (x.team.equals(rc.getTeam().opponent()) && x.type.equals(RobotType.GARDENER)) {
-
-				if (rc.getLocation().distanceTo(x.getLocation()) < 10) {
-					nearbyGardener = true;
-					gardener = x.getLocation();
-				}
-			}
-		}
-		if (nearbyGardener == true) {
-			rc.setIndicatorDot(gardener, 100, 255, 5);
-			moveAround(rc.getLocation().directionTo(gardener));
-			rc.chop(gardener);
-		}
+		
 		TreeInfo[] trees = rc.senseNearbyTrees();
 		TreeInfo closestTree = null;
 		TreeInfo closestRobot = null;
@@ -93,6 +80,22 @@ public class LumberjackBrain implements Brain {
 				}
 			}
 		}
+		MapLocation gardener = null;
+		for (RobotInfo x : enemies) {
+			if (x.team.equals(rc.getTeam().opponent()) && x.type.equals(RobotType.GARDENER)) {
+
+				if (rc.getLocation().distanceTo(x.getLocation()) < 10) {
+					nearbyGardener = true;
+					gardener = x.getLocation();
+				}
+			}
+		}
+		if (nearbyGardener == true) {
+			rc.setIndicatorDot(gardener, 100, 255, 5);
+			moveAround(rc.getLocation().directionTo(gardener));
+			if (distance(rc.getLocation(),gardener)<2.2)
+				rc.strike();
+		}
 		if(!rc.hasMoved()){
 			roam();
 		}
@@ -130,7 +133,7 @@ public class LumberjackBrain implements Brain {
 			boolean right = Math.random() < 0.5;
 			roam = Directions.d12()[(int)(12*Math.random())];
 			for (int i = 0; i < 360; i++) {
-				Direction d = right ? roam.rotateRightDegrees(i) : roam.rotateLeftDegrees(i);
+				Direction d = roam.rotateRightDegrees(right ? i : -i);
 				rc.setIndicatorLine(rc.getLocation(), rc.getLocation().add(d), 0, 0, rc.canMove(d) ? 255 : 0);
 				if (rc.canMove(d)) {
 					rc.move(roam);

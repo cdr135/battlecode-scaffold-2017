@@ -88,7 +88,7 @@ public class GardenerBrain implements Brain {
 				numLumb++;
 			}
 		}
-		if (numLumb < 1 && ntrees.length > 0){
+		if (numLumb < 1 + ntrees.length/3 && ntrees.length > 0){
 			//arbitrary
 			for (Direction dir : shuffle(direction)) {
 				if (rc.canBuildRobot(RobotType.LUMBERJACK, dir)) {
@@ -97,7 +97,7 @@ public class GardenerBrain implements Brain {
 				}
 			}
 		}
-		if (numSoldiers < 3 && atrees.length > 0){
+		if (numSoldiers < 2 && atrees.length > 0){
 			//arbitrary
 			for (Direction dir : shuffle(direction)) {
 				if (rc.canBuildRobot(RobotType.SOLDIER, dir)) {
