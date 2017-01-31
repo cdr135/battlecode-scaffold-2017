@@ -31,6 +31,7 @@ public class GardenerBrain implements Brain {
 
 		boolean shouldPlantTree = true;
 		{
+			//finds the nearby allied tree with the least hp and waters it
 			float minHP = 51;
 			Integer treeID = null;
 			for (TreeInfo t : treeinfo) {
@@ -41,27 +42,28 @@ public class GardenerBrain implements Brain {
 							treeID = t.getID();
 						}
 					} else if (distance(rc.getLocation(), t.location) <= 3.1)
+						//about 3 robots radius
 						shouldPlantTree = false;
 				}
 			}
 			if (treeID != null)
 				rc.water(treeID);
 		}
-		if (moved == null) shouldPlantTree = true;	//i cant move
-		else {
+		if (moved == null) shouldPlantTree = true;	//i didn't move
+		/*else {
 			for (RobotInfo robot : robotinfo)
 				if (robot.getTeam() == rc.getTeam() &&
 				robot.getType() == RobotType.ARCHON) {
 					if (moved < 0.5)
 						shouldPlantTree = false;
 				}
-		}
+		}*/
 
 		if (shouldPlantTree) for (Direction d : shuffle(direction)) {
 			if (rc.canPlantTree(d)) {
-				for (Direction di : direction) {
+				for (Direction di : direction)
+					//helps with debugging
 					rc.setIndicatorDot(rc.getLocation().add(di,2), di==d?0:255, 0, di==d?255:0);
-				}
 				rc.plantTree(d);
 				break;
 			}
@@ -111,27 +113,28 @@ public class GardenerBrain implements Brain {
 
 	private Double move() throws GameActionException {
 		Map<Direction, Double> directionWeights = new HashMap<Direction, Double>();
+		//Only include directions that can be moved to
 		for (Direction d : Directions.d12()) if(rc.canMove(d)) directionWeights.put(d, 1.);
-		TreeInfo[] treeinfo = rc.senseNearbyTrees();
-		RobotInfo[] nejworld = rc.senseNearbyRobots();
 
 		if (directionWeights.size() > 0) {
+			TreeInfo[] treeinfo = rc.senseNearbyTrees();
+			RobotInfo[] robotinfo = rc.senseNearbyRobots();
 			Direction[] directions = directionWeights.keySet().toArray(new Direction[0]);
 			for (TreeInfo tree : treeinfo) treecheck: {
 				if (!tree.team.equals(rc.getTeam()))
 					continue;
-				boolean t_hasGardener = hasOtherGardener(tree, nejworld);
+				boolean t_hasGardener = hasOtherGardener(tree, robotinfo);
 				Direction bearing = direction(rc.getLocation(),tree.location);
 				//if (rc.canInteractWithTree(tree.ID)) {
 				if (t_hasGardener) {
-					for (Direction d : directions)
+					for (Direction d : directions)	//set weighting for each direction
 						if (Math.abs(d.degreesBetween(bearing)) < 40)
 							directionWeights.put(d, directionWeights.get(d)-1);
 						else
 							directionWeights.put(d, directionWeights.get(d)-.3+
 									Math.abs(d.radiansBetween(bearing))/2);
 				} else {
-					for (Direction d : directions)
+					for (Direction d : directions)	//same as above
 						if (Math.abs(d.degreesBetween(bearing)) > 140)
 							directionWeights.put(d, directionWeights.get(d)-1.1);
 						else 
@@ -139,26 +142,15 @@ public class GardenerBrain implements Brain {
 									Math.abs(d.radiansBetween(bearing))/2 + 9 / (1 +
 											d.radiansBetween(bearing))/2);
 				}
-				/*} else {
-					if (!t_hg) {
-						for (Direction d : moveDirs.keySet())
-							if (Math.abs(d.degreesBetween(b)) > 60)
-								moveDirs.put(d, moveDirs.get(d)-
-										distance(rc.getLocation(),
-												tree.location)/2);
-							else moveDirs.put(d, moveDirs.get(d)+
-									(75+tree.health)/(95+d.degreesBetween(b)));
-					}
-				}*/
 			}
-			for (RobotInfo robot : nejworld){
+			for (RobotInfo robot : robotinfo){
 				if (!(robot.team == rc.getTeam()))
 					continue;
 				Direction bearing = direction(rc.getLocation(), robot.location);
 				switch (robot.type) {
 				case ARCHON:
-					for (Direction d : directions){
-						if (Math.abs(d.degreesBetween(bearing)) < 46)
+					for (Direction d : directions) {	//same as above
+						if (Math.abs(d.degreesBetween(bearing)) < 45)
 							directionWeights.put(d, directionWeights.get(d) -
 									(3-Math.abs(d.radiansBetween(bearing))/2)/Math.sqrt(
 											distance(rc.getLocation(),
@@ -182,6 +174,7 @@ public class GardenerBrain implements Brain {
 
 
 			double min = Double.MAX_VALUE, sum = 0;
+			//find the min and sum of direction weights
 			for (Direction d : directions) {
 				sum += directionWeights.get(d);
 				if (directionWeights.get(d) < min) {
@@ -189,30 +182,30 @@ public class GardenerBrain implements Brain {
 				}
 			}
 
-			if (min < sum / 99){
+			if (min < sum / 99){	// guarantees at least 1/99 chance of the least weighted direction
 				for (Direction d : directions) {
 					directionWeights.put(d, directionWeights.get(d) - min);
 				}
-				sum -= directions.length * min;
+				sum -= directions.length * min;	//update sum
 				for (Direction d : directionWeights.keySet())
-					directionWeights.put(d, (directionWeights.get(d)) + sum / 97);
-				sum += directions.length/97 * sum;
+					directionWeights.put(d, (directionWeights.get(d)) + sum / (99 - directions.length));
+				sum += directions.length/(99-directions.length) * sum;	//update sum
 			}
 
-			for (Direction d : directionWeights.keySet())
+			for (Direction d : directionWeights.keySet())	//debugging lines
 				rc.setIndicatorLine(rc.getLocation(), rc.getLocation().add(d,
 						(float) Math.min(1 + Math.abs(directionWeights.get(d).floatValue()),4)),
 						125*(int)(1-Math.signum(directionWeights.get(d))),
 						125*(int)(Math.signum(directionWeights.get(d))+1),
 						0);
 
+			// RNG: generate a direction
 			double[] threshold = new double[directions.length];
 			threshold[0] = directionWeights.get(directions[0])/sum;
 			int i;
 			for (i = 1; i < threshold.length; i++)
 				threshold[i] = threshold[i-1] + directionWeights.get(directions[i])/sum;
 			double rand = Math.random();
-			System.out.println(threshold[threshold.length-1]);
 			while (i > 0) {
 				if (threshold[--i] > rand)
 					if (!rc.hasMoved()){
