@@ -44,18 +44,38 @@ public class ScoutBrain implements Brain {
 			}
 		
 		}
-		//coloumb dodge#1
-		float x  = 0;
-		float y = 0;
-		for (BulletInfo j: bullets){
-			float angle = j.getLocation().directionTo(rc.getLocation()).getAngleDegrees();
-			float distance  =  j.getLocation().distanceSquaredTo(rc.getLocation());
-			x += j.speed * (Math.cos(angle/180 * Math.PI))/distance;
-			y += j.speed * (Math.sin(angle/180 * Math.PI))/distance;
+		if (dangerousBullets.size() == 0){
+			return;
 		}
-		MapLocation destination = new MapLocation(rc.getLocation().x + x, rc.getLocation().y + y);
-		rc.move(destination);
-		
+		else if (dangerousBullets.size() == 1){
+			//maximize angle between bbullet trajectory and nextlocation
+			BulletInfo naw = dangerousBullets.get(0);
+			Direction dir = new Direction ((float) ((naw.getDir().getAngleDegrees() * (Math.PI/180)) + (Math.PI/2)));
+			MapLocation loc1 = new MapLocation((float)(rc.getLocation().x + rc.getType().strideRadius * Math.cos(dir.radians)),(float) (rc.getLocation().y + rc.getType().strideRadius * Math.sin(dir.radians)));
+			Direction dir2 = dir.opposite();
+			MapLocation loc2 = new MapLocation((float)(rc.getLocation().x + rc.getType().strideRadius * Math.cos(dir2.radians)),(float) (rc.getLocation().y + rc.getType().strideRadius * Math.sin(dir2.radians)));
+			float angle1 = naw.dir.degreesBetween(naw.getLocation().directionTo(loc1));
+			float angle2 = naw.dir.degreesBetween(naw.getLocation().directionTo(loc2));
+			if (angle1 > angle2){
+				rc.move(dir);
+			}
+			else{
+				rc.move(dir2);
+			}
+		}
+		else{
+			//coloumb dodge#1
+			float x  = 0;
+			float y = 0;
+			for (BulletInfo j: bullets){
+				float angle = j.getLocation().directionTo(rc.getLocation()).getAngleDegrees();
+				float distance  =  j.getLocation().distanceSquaredTo(rc.getLocation());
+				x += j.speed * (Math.cos(angle/180 * Math.PI))/distance;
+				y += j.speed * (Math.sin(angle/180 * Math.PI))/distance;
+			}
+			MapLocation destination = new MapLocation(rc.getLocation().x + x, rc.getLocation().y + y);
+			rc.move(destination);
+		}
 	}
 	private void stayOutOfRange(){
 		RobotInfo[] robots = rc.senseNearbyRobots();
