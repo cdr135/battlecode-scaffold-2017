@@ -169,7 +169,6 @@ public class ScoutBrain implements Brain {
 	}
 	
 	public void farm(){
-		System.out.println("start farming");
 		TreeInfo[] trees = rc.senseNearbyTrees();
 		//shake anything that you can
 		for(TreeInfo tree: trees){
@@ -197,7 +196,6 @@ public class ScoutBrain implements Brain {
 		//Attempt to move straight towards nearest tree
 		if(!rc.hasMoved() && rc.canMove(rc.getLocation().directionTo(closestTree))){
 			try {
-				System.out.println("moving as intended" + rc.getRoundNum());
 				moveAround(rc.getLocation().directionTo(closestTree));
 			} catch (GameActionException e) {
 				
@@ -208,11 +206,8 @@ public class ScoutBrain implements Brain {
 			for(float n = RobotType.SCOUT.strideRadius; n > 0; n -= RobotType.SCOUT.strideRadius/5){
 				if(!rc.hasMoved() && rc.canMove(rc.getLocation().directionTo(closestTree), n)){
 					try {
-						System.out.println("trying to move incrementally");
 						rc.move(rc.getLocation().directionTo(closestTree), n);
 					} catch (GameActionException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
 					}
 				}
 			}
