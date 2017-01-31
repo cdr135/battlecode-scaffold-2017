@@ -30,40 +30,40 @@ public class GardenerBrain implements Brain {
 		}
 		TreeInfo[] treeinfo = rc.senseNearbyTrees();
 		RobotInfo[] robotinfo = rc.senseNearbyRobots();
+		//finds the nearby allied tree with the least hp and waters it
+		float minHP = 51;
+		Integer treeID = null;
+		for (TreeInfo t : treeinfo) {
+			if (t.getTeam().equals(rc.getTeam())) {
+				if (rc.canInteractWithTree(t.ID)) {
+					if  (t.getHealth() < minHP) {
+						minHP = t.getHealth();
+						treeID = t.getID();
+					}
+				}
+			}
+		}
+		if (treeID != null)
+			rc.water(treeID);
 		if (startbuilding){
-			 for (Direction d : shuffle(direction)) {
-					if (rc.canPlantTree(d)) {
-						for (Direction di : direction)
-							//helps with debugging
-							rc.setIndicatorDot(rc.getLocation().add(di,2), di==d?0:255, 0, di==d?255:0);
-						rc.plantTree(d);
-						break;
-					}
-					//finds the nearby allied tree with the least hp and waters it
-					float minHP = 51;
-					Integer treeID = null;
-					for (TreeInfo t : treeinfo) {
-						if (t.getTeam().equals(rc.getTeam())) {
-							if (rc.canInteractWithTree(t.ID)) {
-								if  (t.getHealth() < minHP) {
-									minHP = t.getHealth();
-									treeID = t.getID();
-								}
-							}
-						}
-					}
-					if (treeID != null)
-						rc.water(treeID);
-		}
-			 
+			for (Direction d : shuffle(direction)) {
+				if (rc.canPlantTree(d)) {
+					for (Direction di : direction)
+						//helps with debugging
+						rc.setIndicatorDot(rc.getLocation().add(di,2), di==d?0:255, 0, di==d?255:0);
+					rc.plantTree(d);
+					break;
+				}
+			}
 
-		
 
-//!builtScout && 3 * robotinfo.length + treeinfo.length < 10
-		
+
+
+			//!builtScout && 3 * robotinfo.length + treeinfo.length < 10
+
 		}
-			
-		
+
+
 	}
 	private void build() throws GameActionException{
 		if (!builtScout) {
@@ -75,7 +75,9 @@ public class GardenerBrain implements Brain {
 				}
 			}
 		}
-		RobotInfo[] allied = rc.senseNearbyRobots(20, rc.getTeam());
+		RobotInfo[] allied = rc.senseNearbyRobots(7, rc.getTeam());
+		TreeInfo[] ntrees = rc.senseNearbyTrees(7, Team.NEUTRAL),
+				atrees = rc.senseNearbyTrees(7, rc.getTeam());
 		int numSoldiers = 0;
 		int numLumb = 0;
 		for (RobotInfo x: allied){
@@ -86,7 +88,7 @@ public class GardenerBrain implements Brain {
 				numLumb++;
 			}
 		}
-		if (numLumb < 1){
+		if (numLumb < 1 && ntrees.length > 0){
 			//arbitrary
 			for (Direction dir : shuffle(direction)) {
 				if (rc.canBuildRobot(RobotType.LUMBERJACK, dir)) {
@@ -95,7 +97,7 @@ public class GardenerBrain implements Brain {
 				}
 			}
 		}
-		if (numSoldiers < 3){
+		if (numSoldiers < 3 && atrees.length > 0){
 			//arbitrary
 			for (Direction dir : shuffle(direction)) {
 				if (rc.canBuildRobot(RobotType.SOLDIER, dir)) {
@@ -118,17 +120,15 @@ public class GardenerBrain implements Brain {
 	}
 
 	private void move() throws GameActionException {
-		RobotInfo[] nearbyAllies = rc.senseNearbyRobots(100, rc.getTeam());
-		TreeInfo[] nearbyTrees = rc.senseNearbyTrees(100, rc.getTeam());
+		RobotInfo[] nearbyAllies = rc.senseNearbyRobots(7, rc.getTeam());
+		TreeInfo[] nearbyTrees = rc.senseNearbyTrees(7, rc.getTeam());
+		int closeAllies = 0;
 		RobotInfo closestAlly = null;
 		for (RobotInfo x : nearbyAllies){
 			if (x.getType().equals(RobotType.ARCHON) || x.getType().equals(RobotType.GARDENER)){
-				if (closestAlly == null){
+				closeAllies++;
+				if (closestAlly == null || distance(rc.getLocation(),x.location) < distance(rc.getLocation(),closestAlly.location))
 					closestAlly = x;
-				}
-				else if (rc.getLocation().distanceTo(closestAlly.getLocation()) > rc.getLocation().distanceTo(x.getLocation())){
-					closestAlly = x;
-				}
 			}
 		}
 		/*
@@ -141,9 +141,9 @@ public class GardenerBrain implements Brain {
 				closestTree = x;
 			}
 		}
-		*/	
-		
-		if (closestAlly == null){
+		 */	
+
+		if (closeAllies < 2){
 			// && closestTree == null){
 			startbuilding = true;
 		}
@@ -154,15 +154,15 @@ public class GardenerBrain implements Brain {
 		else if (closestTree == null && closestAlly!=null){
 			moveAround(closestAlly.getLocation().directionTo(rc.getLocation()));
 		}
-		*/
-		else{
+		 */
+		if (closestAlly != null) {
 			/*
 			if (rc.getLocation().distanceTo(closestTree.getLocation()) < rc.getLocation().distanceSquaredTo(closestAlly.getLocation())){
 				moveAround(closestTree.getLocation().directionTo(rc.getLocation()));
 			}
 			else{
-			*/
-				moveAround(closestAlly.getLocation().directionTo(rc.getLocation()));
+			 */
+			moveAround(closestAlly.getLocation().directionTo(rc.getLocation()));
 		}
 		build();
 	}

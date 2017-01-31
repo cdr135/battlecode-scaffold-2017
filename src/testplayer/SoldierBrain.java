@@ -88,7 +88,7 @@ public class SoldierBrain implements Brain {
 		if (!rc.hasMoved()){
 			for (int i = 0; i < 360; i++){
 				roam.rotateRightDegrees(1);
-				if (rc.canMove(roam)){
+				if (rc.canMove(roam) && !rc.hasMoved()){
 					rc.move(roam);
 					break;
 				}
@@ -171,12 +171,12 @@ public class SoldierBrain implements Brain {
 	public void moveAround (Direction dir) throws GameActionException{
 		for (int i = 0; i < 12; i++){
 			Direction newDir = new Direction ((float) (dir.radians + Math.PI/24));
-			if (rc.canMove(newDir)){
+			if (rc.canMove(newDir) && !rc.hasMoved()){
 				rc.move(newDir);
 				break;
 			}
 			Direction newDir2 = new Direction ((float) ((dir.radians) - Math.PI/24));
-			if (rc.canMove(newDir2)){
+			if (rc.canMove(newDir2) && !rc.hasMoved()){
 				rc.move(newDir2);
 				break;
 			}
