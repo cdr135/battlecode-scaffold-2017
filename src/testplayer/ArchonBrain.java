@@ -48,7 +48,7 @@ public class ArchonBrain implements Brain {
 				}
 				
 		//}
-		if (rc.getTeamBullets() > 250 + 1.5 * Math.log(rc.getRobotCount() + rc.getRoundNum())){
+		if (rc.getTeamBullets() > 250){
 			rc.donate((float) (Math.round(rc.getTeamBullets()/(20*rc.getVictoryPointCost()))*rc.getVictoryPointCost()+.000000001));
 		}
 		// if we can instantly win the game, win
