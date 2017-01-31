@@ -95,7 +95,7 @@ public class GardenerBrain implements Brain {
 				}
 			}
 		}
-		if (numSoldiers < 1){
+		if (numSoldiers < 3){
 			//arbitrary
 			for (Direction dir : shuffle(direction)) {
 				if (rc.canBuildRobot(RobotType.SOLDIER, dir)) {
