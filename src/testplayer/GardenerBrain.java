@@ -28,18 +28,6 @@ public class GardenerBrain implements Brain {
 		Double mr = move();
 		TreeInfo[] treeinfo = rc.senseNearbyTrees();
 		RobotInfo[] nejworld = rc.senseNearbyRobots();
-		// find some way to balance economy of scout it works
-
-
-		if (builtScout == false) {
-			for (Direction dir : shuffle(direction)) {
-				if (rc.canBuildRobot(RobotType.SCOUT, dir)) {
-					rc.buildRobot(RobotType.SCOUT, dir);
-					builtScout = true;
-					break;
-				}
-			}
-		}
 
 		boolean spt = true;
 		{
@@ -79,7 +67,18 @@ public class GardenerBrain implements Brain {
 			}
 		}
 
+		// find some way to balance economy of scout it works
 
+
+		if (!builtScout && 4 * nejworld.length + treeinfo.length < 35) {
+			for (Direction dir : shuffle(direction)) {
+				if (rc.canBuildRobot(RobotType.SCOUT, dir)) {
+					rc.buildRobot(RobotType.SCOUT, dir);
+					builtScout = true;
+					break;
+				}
+			}
+		}
 	}
 
 	private boolean hasOtherGardener(TreeInfo tree, RobotInfo[] robots) {
@@ -151,7 +150,7 @@ public class GardenerBrain implements Brain {
 											distance(rc.getLocation(),
 													robot.location)));
 					}
-			
+
 			for (Direction d : moveDirs.keySet())
 				rc.setIndicatorLine(rc.getLocation(), rc.getLocation().add(d, 1+moveDirs.get(d).floatValue()), 0, 0, 0);
 
