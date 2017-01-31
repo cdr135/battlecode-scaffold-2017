@@ -40,6 +40,7 @@ public class LumberjackBrain implements Brain {
 			}
 		}
 		if (nearbyGardener == true) {
+			rc.setIndicatorDot(gardener, 100, 255, 5);
 			moveAround(rc.getLocation().directionTo(gardener));
 			rc.chop(gardener);
 		}
@@ -49,11 +50,9 @@ public class LumberjackBrain implements Brain {
 		TreeInfo closestBullet = null;
 		for (TreeInfo x : trees) {
 			if (!x.getTeam().equals(rc.getTeam())) {
-				if (closestTree == null) {
-					closestTree = x;
-				}
-				if (rc.getLocation().distanceTo(x.getLocation()) < rc.getLocation()
-						.distanceTo(closestTree.getLocation())) {
+				if (closestTree == null ||
+						rc.getLocation().distanceTo(x.getLocation()) <
+						rc.getLocation().distanceTo(closestTree.getLocation())) {
 					closestTree = x;
 				}
 				if (x.containedRobot != null) {
@@ -80,9 +79,11 @@ public class LumberjackBrain implements Brain {
 			roam();
 		} else {
 			moveAround(rc.getLocation().directionTo(closestTree.getLocation()));
+			rc.setIndicatorDot(closestTree.location, 255, 120, 4);
 			if (rc.canChop(closestTree.getLocation())) {
 				rc.chop(closestTree.getLocation());
-				
+				rc.setIndicatorDot(closestTree.location, 255, 0, 0);
+				rc.setIndicatorLine(rc.getLocation(), closestTree.location, 200, 10, 10);
 			}
 			else{
 				for (TreeInfo x: trees){
@@ -126,9 +127,12 @@ public class LumberjackBrain implements Brain {
 
 	private void roam() throws GameActionException {
 		if (!rc.hasMoved()) {
+			boolean right = Math.random() < 0.5;
+			roam = Directions.d12()[(int)(12*Math.random())];
 			for (int i = 0; i < 360; i++) {
-				roam.rotateRightDegrees(1);
-				if (rc.canMove(roam)) {
+				Direction d = right ? roam.rotateRightDegrees(i) : roam.rotateLeftDegrees(i);
+				rc.setIndicatorLine(rc.getLocation(), rc.getLocation().add(d), 0, 0, rc.canMove(d) ? 255 : 0);
+				if (rc.canMove(d)) {
 					rc.move(roam);
 					break;
 				}
