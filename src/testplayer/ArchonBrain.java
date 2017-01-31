@@ -54,10 +54,14 @@ public class ArchonBrain implements Brain {
 		if (rc.getTeamBullets() > 250){
 			rc.donate((float) (Math.round(rc.getTeamBullets()/(20*rc.getVictoryPointCost()))*rc.getVictoryPointCost()+.000000001));
 		}
+		//cash in when game ends
 		if(rc.getRoundNum() == rc.getRoundLimit() - 1){
 			rc.donate(rc.getTeamBullets());
 		}
-		
+		//cash in when archon almost dead
+		if(rc.getHealth()<30){
+			rc.donate(rc.getTeamBullets());
+		}
 		BulletInfo[] bleh = rc.senseNearbyBullets();
 		//insert dodge script here/movement
 		}
