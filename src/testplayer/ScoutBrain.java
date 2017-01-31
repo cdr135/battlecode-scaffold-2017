@@ -1,6 +1,9 @@
 package testplayer;
 
 import java.util.*;
+
+import com.sun.jdi.Location;
+
 import battlecode.common.*;
 import testplayer.res.*;
 
@@ -30,6 +33,10 @@ public class ScoutBrain implements Brain {
 		if (rc.senseNearbyBullets().length!= 0){
 			dodge();
 		}
+		
+		//if necessary, move out of range of enemies
+		stayOutOfRange();
+		
 		//if we're already close to a gardener just continue shooting
 		RobotInfo[] nearby = rc.senseNearbyRobots();
 		boolean nearbyGardener = false;
@@ -133,12 +140,40 @@ public class ScoutBrain implements Brain {
 						|| robotType == RobotType.TANK) {
 					if(robotType.sensorRadius < rc.getLocation().distanceTo(r.getLocation())){
 						dangerousRobots.add(r);
+						rc.setIndicatorLine(rc.getLocation(), r.getLocation(), 0, 0, 0); 
 					}
 				}
 			}
 		}
+		if (dangerousRobots.size() != 0) {
+			// find best place to dodge by considering possible locations and
+			// maximizing the inverse square of the distances.
+			Direction[] directions = Directions.d12();
+			float smallestSumOfInverseSquares = 99999;
+			float scratch;
+			MapLocation destination = null;
+			MapLocation testLocation = null;
+			for (int n = 0; n < directions.length; n++) {
+				scratch = 0;
+				testLocation = rc.getLocation().add(directions[n], RobotType.SCOUT.strideRadius);
+				for (RobotInfo robotInfo : dangerousRobots) {
+					scratch += 1 / (Math.pow(robotInfo.getLocation().distanceTo(rc.getLocation()), 2));
+				}
+				//Only consider it as a move location if we can move one full stride, helps against being pinned down.
+				if (rc.canMove(rc.getLocation().directionTo(testLocation)) && scratch < smallestSumOfInverseSquares) {
+					destination = testLocation;
+					smallestSumOfInverseSquares = scratch;
+				}
+			}
+			rc.setIndicatorLine(rc.getLocation(), destination, 255, 255, 255);
+			if(rc.canMove(rc.getLocation().directionTo(testLocation))){
+				try {
+					rc.move(rc.getLocation().directionTo(testLocation));
+				} catch (GameActionException e) {
+				}
+			}
+		}
 		
-		//find best place to dodge by considering possible locations and maximizing the inverse square of the distances.
 	}
 	private void initialize() throws GameActionException {
 		current = Routine.GROUP;
