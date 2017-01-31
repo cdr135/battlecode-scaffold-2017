@@ -48,12 +48,13 @@ public class ArchonBrain implements Brain {
 				}
 				
 		//}
-		if (rc.getTeamBullets() > 250){
-			rc.donate((float) (Math.round(rc.getTeamBullets()/(20*rc.getVictoryPointCost()))*rc.getVictoryPointCost()+.000000001));
-		}
 		// if we can instantly win the game, win
 		if (rc.getTeamBullets() >= (1000 - rc.getTeamVictoryPoints()) * rc.getVictoryPointCost())
 			rc.donate((float) ((1000 - rc.getTeamVictoryPoints()) * rc.getVictoryPointCost() + 0.000000001));
+		if (rc.getTeamBullets() > 250){
+			rc.donate((float) (Math.round(rc.getTeamBullets()/(20*rc.getVictoryPointCost()))*rc.getVictoryPointCost()+.000000001));
+		}
+		
 		BulletInfo[] bleh = rc.senseNearbyBullets();
 		//insert dodge script here/movement
 		}
